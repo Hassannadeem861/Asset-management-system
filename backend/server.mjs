@@ -5,9 +5,7 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 
 import connectDB from "./config/db.mjs";
-import authRouter from "./routes/auth-route.mjs";
-import resumeRouter from "./routes/resume-route.mjs";
-import roleRouter from "./routes/role-route.mjs";
+
 
 const app = express();
 
@@ -27,11 +25,11 @@ app.use(express.json());
 app.use(morgan("dev"));
 app.use(cookieParser());
 
+import authRouter from "./routes/auth-route.mjs";
+import roleRouter from "./routes/role-route.mjs";
 
 app.use("/api/v1", authRouter);
-app.use("/api/v1", resumeRouter);
 app.use("/api/v1", roleRouter);
-// app.use(errorMidleWare);
 
 
 // Simple route
