@@ -7,11 +7,17 @@ import nodemailer from "nodemailer";
 dotenv.config();
 
 const register = async (req, res) => {
-    try {
-        const { username, email, password } = req.body;
 
-        if (!username || !email || !password) {
+    try {
+
+        const { username, email, password, cnic } = req.body;
+
+        if (!username || !email || !password || !cnic) {
             return res.status(403).json({ message: "Required parameters missing" });
+        }
+
+        if (cnic.toString().length < 13 || cnic.toString().length >= 14) {
+            return res.status(403).json({ message: "CNIC should be 13 digits" });
         }
 
         const userEmail = await User.findOne({ email: email.toLowerCase() });
@@ -26,10 +32,11 @@ const register = async (req, res) => {
             username,
             email: email.toLowerCase(),
             password: hashedPassword,
+            cnic,
         });
 
-
         return res.status(200).json({ message: "Registration successfully", userCreated });
+        
     } catch (error) {
         return res.status(500).json({ message: "Registraction failed", error: error.message });
     }
@@ -166,7 +173,7 @@ const updatePassword = async (req, res) => {
 };
 
 const updateUser = async (req, res) => {
-    
+
     try {
 
         const userId = req.params.id;
@@ -189,7 +196,7 @@ const updateUser = async (req, res) => {
 
         const updatedUser = await User.findByIdAndUpdate(userId, req.body, { new: true });
         console.log("updatedUser: ", updatedUser);
-        
+
 
         return res.status(200).json({ message: "User updated successfully", updatedUser });
 
