@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import User from "../modles/auth-module.mjs";
+import User from "../modles/auth-modle.js";
 import dotenv from "dotenv";
 
 // Load environment variables

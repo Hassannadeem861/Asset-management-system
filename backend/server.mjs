@@ -27,9 +27,14 @@ app.use(cookieParser());
 
 import authRouter from "./routes/auth-route.mjs";
 import roleRouter from "./routes/role-route.mjs";
+import categoryRoute from "./routes/category-route.js";
+import locationRoute from "./routes/location-route.js";
+import assetRoute from "./routes/asset-route.js";
 
 app.use("/api/v1", authRouter);
 app.use("/api/v1", roleRouter);
+app.use("/api/v1", categoryRoute);
+app.use("/api/v1", assetRoute);
 
 
 // Simple route

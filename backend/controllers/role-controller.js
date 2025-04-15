@@ -1,13 +1,14 @@
-import Role from '../modles/role-module.js';
-import User from '../modles/auth-module.mjs';
+import Role from '../modles/role-modle.js';
+import User from '../modles/auth-modle.js';
 
 export const seedRoles = async (req, res) => {
+    
     try {
 
         const roles = [
-            { name: 'admin', permissions: ['create', 'read', 'update', 'delete'] },  
-            { name: 'assetManager', permissions: ['create', 'read', 'update'] }, 
-            { name: 'user', permissions: ['read'] }
+            { name: 'admin', permissions: ['create_asset', 'view_users', 'update_asset', 'delete_asset'] },  
+            // { name: 'user', permissions: ['read'] }
+            // { name: 'assetManager', permissions: ['create_asset', 'view_users', 'update_asset', 'assign_asset'] }, 
         ];
 
 
@@ -20,7 +21,7 @@ export const seedRoles = async (req, res) => {
             }
         }
 
-        res.status(200).json({ message: 'Roles seeded successfully', roles }); 
+       return res.status(200).json({ message: 'Roles seeded successfully', roles }); 
     } catch (error) {
         res.status(500).json({ error: 'Error seeding roles' });  
     }

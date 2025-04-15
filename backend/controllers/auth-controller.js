@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import User from "../modles/auth-module.mjs";
+import User from "../modles/auth-modle.js";
 import dotenv from "dotenv";
 import nodemailer from "nodemailer";
 
@@ -10,14 +10,28 @@ const register = async (req, res) => {
 
     try {
 
-        const { username, email, password, cnic } = req.body;
+        const { username, email, password, cnic, phone, address, department } = req.body;
 
-        if (!username || !email || !password || !cnic) {
+        if (!username || !email || !password || !cnic || !phone, !address) {
             return res.status(403).json({ message: "Required parameters missing" });
         }
 
         if (cnic.toString().length < 13 || cnic.toString().length >= 14) {
             return res.status(403).json({ message: "CNIC should be 13 digits" });
+        } else {
+            const cnicExists = await User.findOne({ cnic: cnic });
+            if (cnicExists) {
+                return res.status(403).json({ message: "User CNIC already exists" });
+            }
+        }
+
+        if (phone.toString().length < 11 || phone.toString().length >= 12) {
+            return res.status(403).json({ message: "Phone number should be 11 digits" });
+        } else {
+            const phoneExists = await User.findOne({ phone: phone });
+            if (phoneExists) {
+                return res.status(403).json({ message: "User phone number already exists" });
+            }
         }
 
         const userEmail = await User.findOne({ email: email.toLowerCase() });
@@ -33,10 +47,13 @@ const register = async (req, res) => {
             email: email.toLowerCase(),
             password: hashedPassword,
             cnic,
+            address,
+            phone,
+            department
         });
 
         return res.status(200).json({ message: "Registration successfully", userCreated });
-        
+
     } catch (error) {
         return res.status(500).json({ message: "Registraction failed", error: error.message });
     }
@@ -82,11 +99,17 @@ const login = async (req, res) => {
 const getAllUsers = async (req, res) => {
 
     try {
+        
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
 
-        const users = await User.find().populate("role", "permissions").skip(skip).limit(limit).sort({ createdAt: -1 });
+        const users = await User.find()
+            .skip(skip)
+            .limit(limit)
+            .populate("role","permissions")
+            .sort({ createdAt: -1 });
+
 
         const totalUsers = await User.countDocuments();
 
