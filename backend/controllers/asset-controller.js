@@ -50,10 +50,24 @@ const getAllAsset = async (req, res) => {
             .skip(skip)
             .limit(limit);
 
+
+
         const totalAssets = await assetModel.countDocuments();
 
+        const totalAvailableAssets = await assetModel.countDocuments({ status: "available" });
+        const totalInUseAssets = await assetModel.countDocuments({ status: "in use" });
+        const totalUnderRepairAssets = await assetModel.countDocuments({ status: "Under repair" });
 
-        return res.status(201).json({ message: "Fetch all asset successfully", assets, totalAssets, currentPage: page, totalPages: Math.ceil(totalAssets / limit) });
+        return res.status(200).json({
+            message: "Fetch all asset successfully",
+            assets,
+            totalAssets,
+            totalAvailableAssets,
+            totalInUseAssets,
+            totalUnderRepairAssets,
+            currentPage: page,
+            totalPages: Math.ceil(totalAssets / limit)
+        });
 
     } catch (error) {
         return res.status(500).json({ message: "Error creating asset", error: error.message });
@@ -127,11 +141,12 @@ const deleteAsset = async (req, res) => {
 }
 
 const assignAsset = async (req, res) => {
+
     try {
-        
+
         const id = req.params.id;
         const { assignee, assignedBy, status } = req.body;
-       
+
         if (!assignee || !assignedBy) {
             return res.status(400).json({ message: "Please fill in all required fields" });
         }
@@ -139,7 +154,7 @@ const assignAsset = async (req, res) => {
         const asset = await assetModel.findByIdAndUpdate(id, {
             assignee,
             assignedBy,
-            status: status || 'in use' 
+            status: status || 'in use'
         }, { new: true });
 
         if (!asset) {
