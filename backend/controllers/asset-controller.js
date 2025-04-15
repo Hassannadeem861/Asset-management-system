@@ -154,7 +154,6 @@ const assignAsset = async (req, res) => {
         const asset = await assetModel.findByIdAndUpdate(id, {
             assignee,
             assignedBy,
-            status: status || 'in use'
         }, { new: true });
 
         if (!asset) {
