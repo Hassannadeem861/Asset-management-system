@@ -1,12 +1,12 @@
-import assetModel from "../modles/asset-model.js";
-
+import assetModel from "../models/asset-model.js";
+import userModel from "../models/auth-modle.js";
 
 const createAsset = async (req, res) => {
     try {
 
-        const { name, description, category, location, assignee, assignedBy, quantity, purchaseDate, purchasePrice, qrCode, status, condition } = req.body;
+        const { name, description, category, location, assignee, assignedBy, purchaseDate, purchasePrice, qrCode, status, condition } = req.body;
 
-        if (!name || !description || !category || !location || !quantity || !purchaseDate || !purchasePrice || !qrCode) {
+        if (!name || !description || !category || !location || !purchaseDate || !purchasePrice || !qrCode) {
             return res.status(400).json({ message: "Please fill in all required fields" });
         }
 
@@ -17,7 +17,6 @@ const createAsset = async (req, res) => {
             location,
             assignee,
             assignedBy,
-            quantity,
             purchaseDate,
             purchasePrice,
             qrCode,
@@ -92,9 +91,9 @@ const getSingleAsset = async (req, res) => {
 const updateAsset = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, description, category, location, quantity, purchaseDate, purchasePrice, qrCode, status, condition } = req.body;
+        const { name, description, category, location, purchaseDate, purchasePrice, qrCode, status, condition } = req.body;
 
-        if (!name || !description || !category || !location || !quantity || !purchaseDate || !purchasePrice || !qrCode) {
+        if (!name || !description || !category || !location || !purchaseDate || !purchasePrice || !qrCode) {
             return res.status(400).json({ message: "Please fill in all required fields" });
         }
 
@@ -103,7 +102,6 @@ const updateAsset = async (req, res) => {
             description,
             category,
             location,
-            quantity,
             purchaseDate,
             purchasePrice,
             qrCode,
@@ -145,10 +143,28 @@ const assignAsset = async (req, res) => {
     try {
 
         const id = req.params.id;
-        const { assignee, assignedBy, status } = req.body;
+        const { assignee, assignedBy } = req.body;
+
+        if (!id) {
+            return res.status(400).json({ message: "Please provide asset ID" });
+        }
 
         if (!assignee || !assignedBy) {
             return res.status(400).json({ message: "Please fill in all required fields" });
+        }
+
+        const checkAssetId = await assetModel.findById(id).populate("assignee");
+        console.log("checkAssetId", checkAssetId.assignee.username);
+
+
+        if (!checkAssetId) {
+            return res.status(404).json({ message: "Asset not found" });
+        }
+
+        
+        if (checkAssetId.status === "in use") {
+            let currentUserName = checkAssetId?.assignee?.username || "unknown";
+            return res.status(400).json({ message: `Asset already assigned to ${currentUserName}` });
         }
 
         const asset = await assetModel.findByIdAndUpdate(id, {
@@ -160,7 +176,9 @@ const assignAsset = async (req, res) => {
             return res.status(404).json({ message: "Asset not found" });
         }
 
-        return res.status(200).json({ message: "Asset assigned successfully", asset });
+
+
+        return res.status(200).json({ message: `Asset assigned successfully`, asset });
 
     } catch (error) {
         return res.status(500).json({ message: "Error assigning asset", error: error.message });

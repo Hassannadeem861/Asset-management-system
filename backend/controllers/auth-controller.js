@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import User from "../modles/auth-modle.js";
+import User from "../models/auth-modle.js";
 import dotenv from "dotenv";
 import nodemailer from "nodemailer";
 

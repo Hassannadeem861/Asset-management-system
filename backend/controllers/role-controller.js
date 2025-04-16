@@ -1,5 +1,5 @@
-import Role from '../modles/role-modle.js';
-import User from '../modles/auth-modle.js';
+import Role from '../models/role-modle.js';
+import User from '../models/auth-modle.js';
 
 export const seedRoles = async (req, res) => {
     

@@ -1,4 +1,4 @@
-import locationModel from "../modles/location-model.js";
+import locationModel from "../models/location-model.js";
 
 
 const createLocation = async (req, res) => {
