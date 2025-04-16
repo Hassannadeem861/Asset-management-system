@@ -19,14 +19,20 @@ const checkinAsset = async (req, res) => {
             return res.status(400).json({ message: "All fields are required" });
         }
 
-        const checkinAsset = await assetModel.findById(assetId);
+        const checkinAsset = await assetModel.findById(assetId).populate('assignee', 'assignedBy');
+        console.log("checkinAsset: ", checkinAsset.assignee)
 
         if (!checkinAsset) {
             return res.status(404).json({ message: "Asset not found" });
         }
 
-        if (checkinAsset.status !== "available") {
-            return res.status(400).json({ message: "Asset is not available for checkin" });
+         // Allow only if this user is assignee
+         if (String(checkinAsset.assignee) !== String(checkInUser)) {
+            return res.status(403).json({ message: "You are not assigned to this asset" });
+        }
+
+        if (checkinAsset.status === "in use") {
+            return res.status(400).json({ message: "Asset is already in use" });
         }
 
         // Check if the asset is already checked in
@@ -38,6 +44,7 @@ const checkinAsset = async (req, res) => {
         if (existingCheckin) {
             return res.status(400).json({ message: "Asset is already checked in" });
         }
+
 
         const record = await checkinCheckoutModel.create({
             asset: assetId,
