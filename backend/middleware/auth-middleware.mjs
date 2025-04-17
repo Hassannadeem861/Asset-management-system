@@ -1,8 +1,7 @@
 import jwt from "jsonwebtoken";
-import User from "../models/auth-modle.js";
+import adminModel from "../models/admin-auth-model.js";
 import dotenv from "dotenv";
 
-// Load environment variables
 dotenv.config();
 
 const authMiddleware = async (req, res, next) => {
@@ -14,32 +13,38 @@ const authMiddleware = async (req, res, next) => {
   }
 
   try {
+
     const verifyToken = jwt.verify(token, process.env.JWT_SECRET);
 
-   const user = await User.findById(verifyToken.userId);
+   const admin = await adminModel.findById(verifyToken.adminId);
    
-   if (!user) {
-      return res.status(200).json({ message: "User not found" });
+   if (!admin) {
+      return res.status(200).json({ message: "Admin not found" });
     }
 
-    req.user = user;
+    req.admin = admin;
     next();
   } catch (error) {
-    return res.status(200).json({ message: " Invalid token", error: error.message });
+    return res.status(200).json({ message: "Invalid token", error: error.message });
+
   }
 };
 
 const adminMiddleWare = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.userId);
-    console.log("adminMiddleWare :", user);
+    const admin = await adminModel.findById(req?.admin?._id);
+   
+    if (!admin) {
+      return res.status(401).json({ message: "Admin not found" });
+    }
+    console.log("adminMiddleWare :", admin);
 
-    if (user.role !== "admin") {
+    if (admin?.role !== "admin") {
       return res.status(401).json({ message: "This user is not admin" });
     }
     next();
   } catch (error) {
-    return res.status(500).json({ message: "Admin middleware error", error });
+    return res.status(500).json({ message: "Error in admin middleware", error: error.message });
   }
 };
 

@@ -1,5 +1,5 @@
 import assetModel from "../models/asset-model.js";
-import userModel from "../models/auth-modle.js";
+import userModel from "../models/user-auth-modle.js";
 
 const createAsset = async (req, res) => {
     try {

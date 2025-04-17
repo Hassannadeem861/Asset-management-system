@@ -10,7 +10,7 @@ import {
   updatePassword,
   forgetPassword,
   resetPassword
-} from "../controllers/auth-controller.js";
+} from "../controllers/user-auth-controller.js";
 import { authMiddleware } from "../middleware/auth-middleware.mjs";
 const router = express.Router();
 

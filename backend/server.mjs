@@ -25,7 +25,8 @@ app.use(express.json());
 app.use(morgan("dev"));
 app.use(cookieParser());
 
-import authRouter from "./routes/auth-route.mjs";
+import adminAuthRouter from "./routes/admin-auth-route.js";
+import userAuthRouter from "./routes/user-auth-route.js";
 import roleRouter from "./routes/role-route.js";
 import categoryRoute from "./routes/category-route.js";
 import locationRoute from "./routes/location-route.js";
@@ -33,7 +34,8 @@ import assetRoute from "./routes/asset-route.js";
 import checkinCheckoutRoute from "./routes/checkin-checkout-route.js";
 import transferHistoryRoute from "./routes/transfer-history-route.js";
 
-app.use("/api/v1", authRouter);
+app.use("/api/v1/admin", adminAuthRouter);
+app.use("/api/v1/user", userAuthRouter);
 app.use("/api/v1", roleRouter);
 app.use("/api/v1", categoryRoute);
 app.use("/api/v1", locationRoute);

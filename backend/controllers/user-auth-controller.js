@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import User from "../models/auth-modle.js";
+import User from "../models/user-auth-modle.js";
 import dotenv from "dotenv";
 import nodemailer from "nodemailer";
 
@@ -10,7 +10,7 @@ const register = async (req, res) => {
 
     try {
 
-        const { username, email, password, cnic, phone, address, department } = req.body;
+        const { username, email, password, cnic, phone, address } = req.body;
 
         if (!username || !email || !password || !cnic || !phone, !address) {
             return res.status(403).json({ message: "Required parameters missing" });
@@ -49,7 +49,6 @@ const register = async (req, res) => {
             cnic,
             address,
             phone,
-            department
         });
 
         return res.status(200).json({ message: "Registration successfully", userCreated });
