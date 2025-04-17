@@ -1,12 +1,13 @@
 import assetModel from "../models/asset-model.js";
 import userModel from "../models/user-auth-modle.js";
+import adminModel from "../models/admin-auth-model.js";
 
 const createAsset = async (req, res) => {
     try {
 
-        const { name, description, category, location, assignee, assignedBy, purchaseDate, purchasePrice, qrCode, status, condition } = req.body;
+        const { name, description, category, location, assignee, assignedBy, purchaseDate, purchasePrice, status, condition } = req.body;
 
-        if (!name || !description || !category || !location || !purchaseDate || !purchasePrice || !qrCode) {
+        if (!name || !description || !category || !location || !purchaseDate || !purchasePrice || !condition) {
             return res.status(400).json({ message: "Please fill in all required fields" });
         }
 
@@ -19,7 +20,6 @@ const createAsset = async (req, res) => {
             assignedBy,
             purchaseDate,
             purchasePrice,
-            qrCode,
             status,
             condition
         });
@@ -91,7 +91,7 @@ const getSingleAsset = async (req, res) => {
 const updateAsset = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, description, category, location, purchaseDate, purchasePrice, qrCode, status, condition } = req.body;
+        const { name, description, category, location, purchaseDate, purchasePrice, status, condition } = req.body;
 
         if (!name || !description || !category || !location || !purchaseDate || !purchasePrice || !qrCode) {
             return res.status(400).json({ message: "Please fill in all required fields" });
@@ -104,7 +104,6 @@ const updateAsset = async (req, res) => {
             location,
             purchaseDate,
             purchasePrice,
-            qrCode,
             status,
             condition
         }, { new: true });
@@ -153,18 +152,34 @@ const assignAsset = async (req, res) => {
             return res.status(400).json({ message: "Please fill in all required fields" });
         }
 
-        const checkAssetId = await assetModel.findById(id).populate("assignee");
-        console.log("checkAssetId", checkAssetId.assignee.username);
+        const checkUser = await userModel.findById(assignee);
 
+        if (!checkUser) {
+            return res.status(404).json({ message: "First, register yourself as an admin." });
+        }
+
+        const checkAssignedBy = await adminModel.findById(assignedBy);
+
+        if (!checkAssignedBy) {
+            return res.status(404).json({ message: "AssignedBy user not found" });
+        }
+
+        const checkAssetId = await assetModel.findById(id).populate("assignee").populate("assignedBy");
+        console.log("checkAssetId", checkAssetId);
 
         if (!checkAssetId) {
             return res.status(404).json({ message: "Asset not found" });
         }
 
-        
-        if (checkAssetId.status === "in use") {
+
+        if (checkAssetId.assignee) {
             let currentUserName = checkAssetId?.assignee?.username || "unknown";
             return res.status(400).json({ message: `Asset already assigned to ${currentUserName}` });
+        }
+
+
+        if (checkAssetId.status === "in use") {
+            return res.status(400).json({ message: `Asset already assigned` });
         }
 
         const asset = await assetModel.findByIdAndUpdate(id, {

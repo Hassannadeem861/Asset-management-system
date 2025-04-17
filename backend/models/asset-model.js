@@ -7,10 +7,9 @@ const assetSchema = new mongoose.Schema({
     location: { type: mongoose.Schema.Types.ObjectId, ref: 'Location', required: true },
     category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
     assignee: { type: mongoose.Schema.Types.ObjectId, ref: 'Auth' },
-    assignedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Auth' },
+    assignedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'AdminAuth' },
     purchaseDate: { type: Date, required: true },
     purchasePrice: { type: Number, required: true },
-    qrCode: { type: String, required: true, unique: true },
     status: { type: String, enum: ['available', 'in use', 'Under repair'], default: 'available' },
     condition: { type: String, enum: ['new', 'used', 'damaged'], default: 'new' },
 

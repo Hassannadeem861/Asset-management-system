@@ -29,6 +29,7 @@ const register = async (req, res) => {
             name,
             email,
             password: hashedPassword,
+            role
         });
 
         return res.status(200).json({ message: "Registration successfully", adminCreated });
@@ -219,11 +220,11 @@ const resetPassword = async (req, res) => {
         return res.status(200).json({ message: "Password has been reset successfully." });
 
     } catch (error) {
-        // if (error.name === "TokenExpiredError") {
-        //     return res.status(400).json({ message: "Token has expired. Please request a new password reset link." });
-        // } else if (error.name === "JsonWebTokenError") {
-        //     return res.status(400).json({ message: "Invalid token. Please request a new password reset link." });
-        // }
+        if (error.name === "TokenExpiredError") {
+            return res.status(400).json({ message: "Token has expired. Please request a new password reset link.", error: error.message });
+        } else if (error.name === "JsonWebTokenError") {
+            return res.status(400).json({ message: "Invalid token. Please request a new password reset link.", error: error.message });
+        }
 
         return res.status(500).json({ message: "Error in reseting password", error: error.message });
     }

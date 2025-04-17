@@ -8,40 +8,30 @@ const checkinAsset = async (req, res) => {
     try {
 
         const { assetId } = req.params;
-        const { checkInUser, checkInLocation } = req.body;
+        const { checkInUser } = req.body;
 
         if (!assetId) {
-            return res.status(400).json({ message: "Checkin asset ID is required" });
+            return res.status(400).json({ message: "asset ID is required" });
         }
 
 
-        if (!checkInUser || !checkInLocation) {
+        if (!checkInUser) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
-        const checkinAsset = await assetModel.findById(assetId).populate('assignee', 'assignedBy');
-        console.log("checkinAsset: ", checkinAsset.assignee)
+        const asset = await assetModel.findById(assetId);
 
-        if (!checkinAsset) {
+        if (!asset) {
             return res.status(404).json({ message: "Asset not found" });
         }
 
-         // Allow only if this user is assignee
-         if (String(checkinAsset.assignee) !== String(checkInUser)) {
-            return res.status(403).json({ message: "You are not assigned to this asset" });
+        if (String(asset.assignee) !== String(checkInUser)) {
+            return res.status(403).json({ message: "You are not the assignee of this asset" });
         }
 
-        if (checkinAsset.status === "in use") {
-            return res.status(400).json({ message: "Asset is already in use" });
-        }
+        const lastRecord = await checkinCheckoutModel.findOne({ asset: assetId }).sort({ createdAt: -1 });
 
-        // Check if the asset is already checked in
-        const existingCheckin = await checkinCheckoutModel.findOne({
-            assetId: assetId,
-            status: "checked-in"
-        });
-
-        if (existingCheckin) {
+        if (lastRecord && lastRecord.status === "checked-in") {
             return res.status(400).json({ message: "Asset is already checked in" });
         }
 
@@ -49,7 +39,6 @@ const checkinAsset = async (req, res) => {
         const record = await checkinCheckoutModel.create({
             asset: assetId,
             checkInUser,
-            checkInLocation,
             status: "checked-in"
         })
 
@@ -68,41 +57,37 @@ const checkoutAsset = async (req, res) => {
     try {
 
         const { assetId } = req.params;
-        const { checkOutUser, checkOutLocation } = req.body;
+        const { checkOutUser } = req.body;
 
         if (!assetId) {
             return res.status(400).json({ message: "asset ID is required" });
         }
 
-        if (!checkOutUser || !checkOutLocation) {
+        if (!checkOutUser) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
 
-        const checkoutAsset = await assetModel.findById(assetId);
+        const asset = await assetModel.findById(assetId);
 
-        if (!checkoutAsset) {
+
+        if (!asset) {
             return res.status(404).json({ message: "Asset not found" });
         }
 
-        if (checkoutAsset.status !== "in use") {
-            return res.status(400).json({ message: "Asset is not available for checkout" });
+        if (String(asset.assignee) !== String(checkOutUser)) {
+            return res.status(403).json({ message: "You are not the assignee of this asset" });
         }
 
-        // Check if the asset is already checked out
-        const existingCheckout = await checkinCheckoutModel.findOne({
-            assetId: assetId,
-            status: "checked-out"
-        });
+        const lastRecord = await checkinCheckoutModel.findOne({ asset: assetId }).sort({ createdAt: -1 });
 
-        if (existingCheckout) {
-            return res.status(400).json({ message: "Asset is already checked out" });
+        if (!lastRecord || lastRecord.status !== "checked-in") {
+            return res.status(400).json({ message: "Cannot checkout. Asset is not checked in yet" });
         }
 
         const record = await checkinCheckoutModel.create({
             asset: assetId,
             checkOutUser,
-            checkOutLocation,
             status: "checked-out"
         })
 
@@ -117,8 +102,8 @@ const checkoutAsset = async (req, res) => {
 
 const getCheckinCheckoutRecords = async (req, res) => {
     try {
-        const records = await checkinCheckoutModel.find().populate('asset checkInUser checkInLocation checkOutUser checkOutLocation')
-        // .sort({ createdAt: -1 });
+        const records = await checkinCheckoutModel.find().populate('asset checkInUser checkOutUser')
+            .sort({ createdAt: -1 });
 
         if (!records || records.length === 0) {
             return res.status(404).json({ message: "No records found" });
