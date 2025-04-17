@@ -126,6 +126,7 @@ const forgetPassword = async (req, res) => {
         }
 
         const admin = await adminModel.findOne({ email: email.toLowerCase() });
+        console.log("admin: ", admin);
 
         if (!admin) {
             return res.status(404).json({ message: "Admin not found. Please register first." });
@@ -157,13 +158,12 @@ const forgetPassword = async (req, res) => {
         };
 
         console.log("mailOptions: ", mailOptions);
+
         // Send email
         await transporter.sendMail(mailOptions);
 
-        // Respond with success
         return res.status(200).json({ message: "Password reset link has been sent to your email." });
     } catch (error) {
-        console.error("Forget password error: ", error);
         return res.status(500).json({ message: "Error in forget password", error: error.message });
     }
 };
@@ -172,8 +172,8 @@ const resetPassword = async (req, res) => {
 
     try {
 
-        const { token } = req.params;
-        // console.log("token: ", token);
+        const  token  = req.params.token.trim();
+        console.log("token: ", token);
         // console.log("req.params: ", req.params);
 
         if (!token) {
@@ -213,7 +213,7 @@ const resetPassword = async (req, res) => {
 
 
         admin.password = hashedPassword;
-        await user.save();
+        await admin.save();
 
 
         return res.status(200).json({ message: "Password has been reset successfully." });
@@ -225,7 +225,7 @@ const resetPassword = async (req, res) => {
         //     return res.status(400).json({ message: "Invalid token. Please request a new password reset link." });
         // }
 
-        return res.status(500).json({ message: "An error occurred while resetting the password.", error: error.message });
+        return res.status(500).json({ message: "Error in reseting password", error: error.message });
     }
 };
 
