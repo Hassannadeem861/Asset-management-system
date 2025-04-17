@@ -7,13 +7,12 @@ import nodemailer from "nodemailer";
 
 
 const register = async (req, res) => {
-    a
 
     try {
 
-        const { name, email, password, role } = req.body;
+        const { name, email, password } = req.body;
 
-        if (!name || !email || !password || !role) {
+        if (!name || !email || !password) {
             return res.status(403).json({ message: "Name, email and password role are required" });
         }
 
@@ -30,7 +29,6 @@ const register = async (req, res) => {
             name,
             email,
             password: hashedPassword,
-            role
         });
 
         return res.status(200).json({ message: "Registration successfully", adminCreated });
@@ -197,7 +195,7 @@ const resetPassword = async (req, res) => {
 
         const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
         console.log("decodedToken: ", decodedToken);
-        
+
         if (!decodedToken) {
             return res.status(400).json({ message: "Invalid or expired token." });
         }
@@ -226,7 +224,7 @@ const resetPassword = async (req, res) => {
         // } else if (error.name === "JsonWebTokenError") {
         //     return res.status(400).json({ message: "Invalid token. Please request a new password reset link." });
         // }
-        
+
         return res.status(500).json({ message: "An error occurred while resetting the password.", error: error.message });
     }
 };

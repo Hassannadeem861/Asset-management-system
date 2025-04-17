@@ -14,7 +14,7 @@ const router = express.Router();
 
 router.post("/register", register);
 router.post("/login", login);
-router.get("/get-all-admins", authMiddleware, adminMiddleWare, getAllAdmins);
+router.get("/get-all-admins", authMiddleware, getAllAdmins);
 router.get("/logout", logout);
 router.post("/forget-password", forgetPassword);
 router.post("/reset-password/:token", resetPassword);
