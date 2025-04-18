@@ -1,36 +1,48 @@
 import transferHistoryModel from "../models/transferHistory-model.js";
 import assetModel from "../models/asset-model.js";
+import locationModel from "../models/location-model.js";
+import userModel from "../models/user-auth-modle.js";
+import adminModel from "../models/admin-auth-model.js";
 
 const createTransfer = async (req, res) => {
+
     try {
 
-        const asset = req.params.id;
+        const { asset, fromLocation, toLocation, fromUser, toUser, assignedBy } = req.body;
 
-        const { fromLocation, toLocation, fromUser, toUser } = req.body;
-
-        if (!asset) {
-            return res.status(400).json({ message: "Asset ID is required" });
-        }
-
-        if (!fromLocation || !toLocation || !fromUser || !toUser) {
-            return res.status(400).json({ message: "All fields are required" });
-        }
-
-        const checkAsset = await assetModel.findById(asset);
-
-        if (!checkAsset) {
-            return res.status(404).json({ message: "Asset not found" });
-        }
-
-        // 🚨 Prevent transferring to same user and same location
-        if (fromUser === toUser) {
+        if (!asset || !fromLocation || !toLocation || !fromUser || !toUser || !assignedBy) {
             return res.status(400).json({
-                message: "Asset is already assigned to this user"
+                message: "All fields (asset, fromLocation, toLocation, fromUser, toUser, assignedBy) are required to proceed with the transfer."
             });
         }
 
-        if (checkAsset.status !== "available") {
-            return res.status(400).json({ message: "Asset is not available for transfer" });
+        const [assetDoc, fromLocDoc, toLocDoc, fromUserDoc, toUserDoc, assignedByDoc] = await Promise.all([
+            assetModel.findById(asset),
+            locationModel.findById(fromLocation),
+            locationModel.findById(toLocation),
+            userModel.findById(fromUser),
+            userModel.findById(toUser),
+            adminModel.findById(assignedBy)
+        ]);
+
+
+        if (!assetDoc) return res.status(404).json({ message: "Asset not found." });
+        if (!fromLocDoc) return res.status(404).json({ message: "From location not found." });
+        if (!toLocDoc) return res.status(404).json({ message: "To location not found." });
+        if (!fromUserDoc) return res.status(404).json({ message: "From user not found." });
+        if (!toUserDoc) return res.status(404).json({ message: "To user not found." });
+        if (!assignedByDoc) return res.status(404).json({ message: "Admin not found." });
+
+        if (String(fromUser) === String(toUser)) {
+            return res.status(400).json({
+                message: "Asset is already assigned to the user"
+            });
+        }
+
+        if (assetDoc.status === "in use" || assetDoc.status === "Under repair") {
+            return res.status(400).json({
+                message: `Asset is not currently available because it is ${assetDoc.status}`
+            });
         }
 
         const transferHistory = await transferHistoryModel.create({
@@ -39,15 +51,20 @@ const createTransfer = async (req, res) => {
             toLocation,
             fromUser,
             toUser,
+            assignedBy,
             transferDate: new Date()
         });
 
-        checkAsset.assignee = toUser;
-        checkAsset.location = toLocation;
-        checkAsset.status = "in use";
-        await checkAsset.save();
+        // ✅ Update asset
+        assetDoc.assignee = toUser;
+        assetDoc.location = toLocation;
+        assetDoc.status = "in use";
+        await assetDoc.save();
 
-        return res.status(201).json({ message: "Transfer history created successfully", transferHistory });
+        return res.status(201).json({
+            message: "Asset transferred successfully and transfer history recorded.",
+            transferHistory
+        });
     } catch (error) {
         return res.status(500).json({ message: "Error creating transfer history", error: error.message });
     }
@@ -74,8 +91,12 @@ const getAllTransfers = async (req, res) => {
 };
 
 const getTransferById = async (req, res) => {
+
     try {
+
         const { id } = req.params;
+
+        console.log(id);
 
         if (!id) {
             return res.status(400).json({ message: "Transfer ID is required" });

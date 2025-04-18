@@ -28,6 +28,19 @@ const userSchema = new mongoose.Schema(
       default: 'active'
     },
 
+    // history: [
+    //   {
+    //     checkin: {
+    //       type: Date,
+    //       default: Date.now
+    //     },
+    //     checkout: {
+    //       type: Date,
+    //       default: Date.now
+    //     }
+    //   }
+    // ]
+
     // role: { type: mongoose.Schema.Types.ObjectId, ref: 'Role' },
 
   },

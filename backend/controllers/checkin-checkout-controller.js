@@ -92,6 +92,7 @@ const checkoutAsset = async (req, res) => {
         })
 
         await assetModel.findByIdAndUpdate(assetId, { status: "available" });
+
         return res.status(201).json({ message: "Checkout asset successfully", record });
 
 
@@ -116,4 +117,90 @@ const getCheckinCheckoutRecords = async (req, res) => {
     }
 }
 
-export { checkinAsset, checkoutAsset, getCheckinCheckoutRecords };
+const getSingleCheckinCheckoutRecord = async (req, res) => {
+    
+    try {
+        
+        const { id } = req.params;
+
+        if (!id) {
+            return res.status(400).json({ message: "Record ID is required" });
+        }
+
+        const record = await checkinCheckoutModel.findById(id).populate('asset checkInUser checkOutUser');
+
+        if (!record) {
+            return res.status(404).json({ message: "Record not found" });
+        }
+
+        return res.status(200).json({ message: "Single record fetched successfully", record });
+
+    } catch (error) {
+        return res.status(500).json({ message: "Error fetching record", error: error.message });
+    }
+}
+
+const updateCheckinCheckoutRecord = async (req, res) => {
+
+    try {
+
+        const { id } = req.params;
+
+        const { checkInUser, checkOutUser } = req.body;
+
+        if (!id) {
+            return res.status(400).json({ message: "Record ID is required" });
+        }
+
+        if (!checkInUser && !checkOutUser) {
+            return res.status(400).json({ message: "At least one field is edit" });
+        }
+
+        const existingRecord = await checkinCheckoutModel.findById(id);
+
+        if (!existingRecord) {
+            return res.status(404).json({ message: "Record not found" });
+        }
+
+
+        const record = await checkinCheckoutModel.findByIdAndUpdate(id, req.body, { new: true });
+
+        if (!record) {
+            return res.status(404).json({ message: "Record not found" });
+        }
+
+        return res.status(200).json({ message: "Record updated successfully", record });
+
+    }
+    catch (error) {
+        return res.status(500).json({ message: "Error updating record", error: error.message });
+    }
+}
+
+const deleteCheckinCheckoutRecord = async (req, res) => {
+
+    try {
+
+        const { id } = req.params;
+
+        if (!id) {
+            return res.status(400).json({ message: "Record ID is required" });
+        }
+
+        const record = await checkinCheckoutModel.findByIdAndDelete(id);
+
+        if (!record) {
+            return res.status(404).json({ message: "Record not found" });
+        }
+
+        return res.status(200).json({ message: "Record deleted successfully" });
+
+    }
+    catch (error) {
+        return res.status(500).json({ message: "Error deleting record", error: error.message });
+    }
+}
+
+
+
+export { checkinAsset, checkoutAsset, getCheckinCheckoutRecords, getSingleCheckinCheckoutRecord, updateCheckinCheckoutRecord, deleteCheckinCheckoutRecord };
