@@ -1,6 +1,7 @@
 import assetModel from "../models/asset-model.js";
 import userModel from "../models/user-auth-modle.js";
 import adminModel from "../models/admin-auth-model.js";
+import mongoose from "mongoose";
 
 const createAsset = async (req, res) => {
     try {
@@ -87,6 +88,97 @@ const getSingleAsset = async (req, res) => {
         return res.status(500).json({ message: "Error fetching asset", error: error.message });
     }
 }
+
+const getFilterData = async (req, res) => {
+
+    try {
+
+        const { location, category, status } = req.query;
+
+        const filter = {};
+
+        if (location && mongoose.Types.ObjectId.isValid(location)) {
+            filter.location = location;
+        }
+
+        if (category && mongoose.Types.ObjectId.isValid(category)) {
+            filter.category = category;
+        }
+
+        if (status) filter.status = status
+        console.log("filter: ", filter)
+
+        const assets = await assetModel.find(filter).populate("location").populate("category");
+
+        if (assets.length === 0) {
+            return res.status(404).json({ message: "No asset found" });
+        }
+
+
+        return res.status(200).json({ message: "Fetch filtered asset successfully", assets });
+
+
+    } catch (error) {
+
+        return res.status(500).json({ message: "Error fetching asset", error: error.message });
+    }
+
+}
+
+const searchAssets = async (req, res) => {
+    try {
+        const { keyword, category, location, status, page = 1, limit = 10 } = req.query;
+
+        const filter = {};
+
+        // 🔍 Keyword search (name ya description)
+        if (keyword) {
+            filter.$or = [
+                { name: { $regex: keyword, $options: "i" } },
+                { description: { $regex: keyword, $options: "i" } },
+            ];
+        }
+
+        // ✅ Category filter
+        if (category) filter.category = category;
+
+        // ✅ Location filter
+        if (location) filter.location = location;
+
+        // ✅ Status filter
+        if (status) filter.status = status;
+
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        const assets = await assetModel
+            .find(filter)
+            .populate("category", "_id name")
+            .populate("location", "_id name address")
+            .populate("assignee", "_id username")
+            .populate("assignedBy", "_id name role")
+            .skip(skip)
+            .limit(parseInt(limit));
+
+        const total = await assetModel.countDocuments(filter);
+
+        if (assets.length === 0) {
+            return res.status(404).json({ message: "No assets found" });
+        }
+
+        res.status(200).json({
+            message: "Assets fetched successfully",
+            data: assets,
+            pagination: {
+                total,
+                page: parseInt(page),
+                limit: parseInt(limit),
+                totalPages: Math.ceil(total / limit),
+            },
+        });
+    } catch (error) {
+        res.status(500).json({ message: "Error searching assets", error: error.message });
+    }
+};
 
 const updateAsset = async (req, res) => {
     try {
@@ -205,4 +297,4 @@ const assignAsset = async (req, res) => {
 
 
 
-export { createAsset, getAllAsset, getSingleAsset, updateAsset, deleteAsset, assignAsset };
+export { createAsset, getAllAsset, getSingleAsset, updateAsset, deleteAsset, assignAsset, getFilterData, searchAssets };
