@@ -10,9 +10,9 @@ const userSchema = new mongoose.Schema(
 
     password: { type: String, required: true, select: false },
 
-    cnic: { type: Number, required: true, unique: true },
+    cnic: { type: String, required: true, unique: true, match: /^[0-9]{13}$/ },
 
-    phone: { type: Number, required: true, unique: true },
+    phone: { type: String, required: true, unique: true, match: /^[0-9]{11}$/ },
 
     address: { type: String, required: true },
 

@@ -16,23 +16,29 @@ const register = async (req, res) => {
             return res.status(403).json({ message: "Required parameters missing" });
         }
 
-        if (cnic.toString().length < 13 || cnic.toString().length >= 14) {
-            return res.status(403).json({ message: "CNIC should be 13 digits" });
-        } else {
-            const cnicExists = await User.findOne({ cnic: cnic });
-            if (cnicExists) {
-                return res.status(403).json({ message: "User CNIC already exists" });
-            }
+        const cnicRegex = /^(42101|42201|42301|42501)\d{7}\d{1}$/;
+
+        if (!cnicRegex.test(cnic.toString())) {
+            return res.status(400).json({ message: "CNIC must be 13 digits and start with a valid Karachi code (42101, 42201, 42301, 42501)" });
         }
 
-        if (phone.toString().length < 11 || phone.toString().length >= 12) {
-            return res.status(403).json({ message: "Phone number should be 11 digits" });
-        } else {
-            const phoneExists = await User.findOne({ phone: phone });
-            if (phoneExists) {
-                return res.status(403).json({ message: "User phone number already exists" });
-            }
+        const cnicExists = await User.findOne({ cnic });
+        if (cnicExists) {
+            return res.status(409).json({ message: "CNIC already registered" });
         }
+
+        const phoneRegex = /^03\d{9}$/;
+
+        if (!phoneRegex.test(phone.toString())) {
+            return res.status(400).json({ message: "Phone number must start with 03 and be 11 digits long" });
+        }
+
+
+        const phoneExists = await User.findOne({ phone });
+        if (phoneExists) {
+            return res.status(409).json({ message: "Phone number already registered" });
+        }
+
 
         const userEmail = await User.findOne({ email: email.toLowerCase() });
 
@@ -98,7 +104,7 @@ const login = async (req, res) => {
 const getAllUsers = async (req, res) => {
 
     try {
-        
+
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
@@ -106,7 +112,7 @@ const getAllUsers = async (req, res) => {
         const users = await User.find()
             .skip(skip)
             .limit(limit)
-            .populate("role","permissions")
+            // .populate("role", "permissions")
             .sort({ createdAt: -1 });
 
 
