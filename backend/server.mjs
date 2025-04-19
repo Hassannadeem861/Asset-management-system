@@ -33,6 +33,7 @@ import locationRoute from "./routes/location-route.js";
 import assetRoute from "./routes/asset-route.js";
 import checkinCheckoutRoute from "./routes/checkin-checkout-route.js";
 import transferHistoryRoute from "./routes/transfer-history-route.js";
+import repairRoute from "./routes/repair-route.js";
 
 app.use("/api/v1/admin", adminAuthRouter);
 app.use("/api/v1/user", userAuthRouter);
@@ -42,6 +43,7 @@ app.use("/api/v1", locationRoute);
 app.use("/api/v1", assetRoute);
 app.use("/api/v1", checkinCheckoutRoute);
 app.use("/api/v1", transferHistoryRoute);
+app.use("/api/v1", repairRoute);
 
 
 // Simple route
