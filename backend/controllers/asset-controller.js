@@ -106,7 +106,6 @@ const getFilterData = async (req, res) => {
         }
 
         if (status) filter.status = status
-        console.log("filter: ", filter)
 
         const assets = await assetModel.find(filter).populate("location").populate("category");
 
@@ -265,7 +264,7 @@ const assignAsset = async (req, res) => {
 
 
         if (checkAssetId.assignee) {
-            let currentUserName = checkAssetId?.assignee?.username || "unknown";
+            let currentUserName = checkAssetId?.assignee?._id || "unknown";
             return res.status(400).json({ message: `Asset already assigned to ${currentUserName}` });
         }
 
