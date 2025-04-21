@@ -6,7 +6,7 @@ import nodemailer from "nodemailer";
 
 dotenv.config();
 
-const register = async (req, res) => {
+const register = async (req, res) => {c
 
     try {
 
@@ -27,12 +27,10 @@ const register = async (req, res) => {
             return res.status(409).json({ message: "CNIC already registered" });
         }
 
-        const phoneRegex = /^03\d{9}$/;
+        // const phoneRegex = /^03\d{9}$/;
 
-        if (!phoneRegex.test(phone.toString())) {
-            return res.status(400).json({ message: "Phone number must start with 03 and be 11 digits long" });
-        }
-
+        // if (!phoneRegex.test(phone.toString())) {
+        //     retua
 
         const phoneExists = await User.findOne({ phone });
         if (phoneExists) {

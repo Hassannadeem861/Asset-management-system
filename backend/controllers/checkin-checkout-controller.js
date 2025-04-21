@@ -32,7 +32,7 @@ const checkinAsset = async (req, res) => {
         const lastRecord = await checkinCheckoutModel.findOne({ asset: assetId }).sort({ createdAt: -1 });
 
         if (lastRecord && lastRecord.status === "checked-in") {
-            return res.status(400).json({ message: "Asset is already checked in" });
+            return res.status(400).json({ message: "Asset is already assigned" });
         }
 
 
@@ -69,6 +69,8 @@ const checkoutAsset = async (req, res) => {
 
 
         const asset = await assetModel.findById(assetId);
+        console.log(asset.assignee);
+        
 
 
         if (!asset) {
@@ -91,7 +93,8 @@ const checkoutAsset = async (req, res) => {
             status: "checked-out"
         })
 
-        await assetModel.findByIdAndUpdate(assetId, { status: "available" });
+        await assetModel.findByIdAndUpdate(assetId, { status: "available", assignee: null, assignedBy: null });
+        // await assetModel.findByIdAndDelete(asset.assignee);
 
         return res.status(201).json({ message: "Checkout asset successfully", record });
 
@@ -118,9 +121,9 @@ const getCheckinCheckoutRecords = async (req, res) => {
 }
 
 const getSingleCheckinCheckoutRecord = async (req, res) => {
-    
+
     try {
-        
+
         const { id } = req.params;
 
         if (!id) {

@@ -55,10 +55,10 @@ const createTransfer = async (req, res) => {
             transferDate: new Date()
         });
 
-        // ✅ Update asset
         assetDoc.assignee = toUser;
+        assetDoc.assignedBy = assignedBy;
         assetDoc.location = toLocation;
-        assetDoc.status = "in use";
+        assetDoc.status = "available";
         await assetDoc.save();
 
         return res.status(201).json({

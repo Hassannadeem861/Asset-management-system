@@ -23,18 +23,24 @@ const createRepair = async (req, res) => {
             return res.status(400).json({ message: "This asset is already under repair." });
         }
 
-        const newRepair = await repairModel.create({
-            asset,
-            sendDate,
-            repairPlace,
-            cost,
-        });
+        if (checkAssetId.status === "available") {
 
+            const newRepair = await repairModel.create({
+                asset,
+                sendDate,
+                repairPlace,
+                cost,
+            });
 
-        checkAssetId.status = "Under repair";
-        await checkAssetId.save();
+            checkAssetId.status = "Under repair";
+            await checkAssetId.save();
 
-        return res.status(201).json({ message: "Repair created successfully", data: newRepair });
+            return res.status(201).json({ message: "Repair created successfully", data: newRepair });
+
+        } else {
+            return res.status(400).json({ message: "Asset is not available for repair" });
+        }
+
     } catch (error) {
         return res.status(500).json({ message: "Error creating repair", error: error.message });
     }
@@ -145,8 +151,6 @@ const updateRepair = async (req, res) => {
         }
 
         const repair = await repairModel.findById(id);
-        console.log(repair.asset);
-
         if (!repair) {
             return res.status(404).json({ message: "Repair not found" });
         }
