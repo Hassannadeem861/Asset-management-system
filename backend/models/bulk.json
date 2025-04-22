@@ -1,0 +1,183 @@
+[
+    {
+      "name": "HP EliteBook 840",
+      "description": "14-inch business laptop",
+      "location": "67fe31a01837aef6adcc0e34",
+      "category": "67fe2e2df81a0a4e10fd9979",
+      "purchaseDate": "2023-04-01",
+      "purchasePrice": 95000,
+      "condition": "used"
+    },
+    {
+      "name": "Dell Latitude 5420",
+      "description": "Durable laptop for office work",
+      "location": "67fe31a01837aef6adcc0e34",
+      "category": "67fe2e2df81a0a4e10fd9979",
+      "purchaseDate": "2023-06-12",
+      "purchasePrice": 87000,
+      "condition": "new"
+    },
+    {
+      "name": "MacBook Air M1",
+      "description": "Apple M1 Chip lightweight laptop",
+      "location": "67fe31a01837aef6adcc0e34",
+      "category": "67fe2e2df81a0a4e10fd9979",
+      "purchaseDate": "2022-09-05",
+      "purchasePrice": 115000,
+      "condition": "used"
+    },
+    {
+      "name": "Lenovo ThinkPad X1",
+      "description": "High performance ThinkPad series",
+      "location": "67fe31a01837aef6adcc0e34",
+      "category": "67fe2e2df81a0a4e10fd9979",
+      "purchaseDate": "2021-11-25",
+      "purchasePrice": 99000,
+      "condition": "used"
+    },
+    {
+      "name": "Acer Aspire 5",
+      "description": "Budget friendly notebook",
+      "location": "67fe31a01837aef6adcc0e34",
+      "category": "67fe2e2df81a0a4e10fd9979",
+      "purchaseDate": "2023-01-15",
+      "purchasePrice": 65000,
+      "condition": "new"
+    },
+    {
+      "name": "Samsung Monitor 27\"",
+      "description": "Full HD curved monitor",
+      "location": "67fe31a01837aef6adcc0e34",
+      "category": "67fe2e2df81a0a4e10fd9979",
+      "purchaseDate": "2022-10-10",
+      "purchasePrice": 30000,
+      "condition": "used"
+    },
+    {
+      "name": "Canon Printer G2020",
+      "description": "All-in-one ink tank printer",
+      "location": "67fe31a01837aef6adcc0e34",
+      "category": "67fe2e2df81a0a4e10fd9979",
+      "purchaseDate": "2021-03-05",
+      "purchasePrice": 18000,
+      "condition": "used"
+    },
+    {
+      "name": "iMac 24-inch",
+      "description": "M1 chip all-in-one desktop",
+      "location": "67fe31a01837aef6adcc0e34",
+      "category": "67fe2e2df81a0a4e10fd9979",
+      "purchaseDate": "2022-07-07",
+      "purchasePrice": 230000,
+      "condition": "used"
+    },
+    {
+      "name": "HP LaserJet Pro M404n",
+      "description": "Monochrome Laser Printer",
+      "location": "67fe31a01837aef6adcc0e34",
+      "category": "67fe2e2df81a0a4e10fd9979",
+      "purchaseDate": "2020-05-18",
+      "purchasePrice": 28000,
+      "condition": "damaged"
+    },
+    {
+      "name": "Dell OptiPlex 3080",
+      "description": "Business desktop computer",
+      "location": "67fe31a01837aef6adcc0e34",
+      "category": "67fe2e2df81a0a4e10fd9979",
+      "purchaseDate": "2021-12-12",
+      "purchasePrice": 75000,
+      "condition": "used"
+    },
+    {
+      "name": "LG LED Monitor 24\"",
+      "description": "Full HD LED monitor",
+      "location": "67fe31a01837aef6adcc0e34",
+      "category": "67fe2e2df81a0a4e10fd9979",
+      "purchaseDate": "2022-08-22",
+      "purchasePrice": 22000,
+      "condition": "new"
+    },
+    {
+      "name": "HP Pavilion Desktop",
+      "description": "Multimedia desktop PC",
+      "location": "67fe31a01837aef6adcc0e34",
+      "category": "67fe2e2df81a0a4e10fd9979",
+      "purchaseDate": "2023-02-14",
+      "purchasePrice": 69000,
+      "condition": "new"
+    },
+    {
+      "name": "Asus ROG Strix",
+      "description": "Gaming laptop series",
+      "location": "67fe31a01837aef6adcc0e34",
+      "category": "67fe2e2df81a0a4e10fd9979",
+      "purchaseDate": "2023-03-10",
+      "purchasePrice": 145000,
+      "condition": "new"
+    },
+    {
+      "name": "Microsoft Surface Pro 7",
+      "description": "2-in-1 laptop tablet",
+      "location": "67fe31a01837aef6adcc0e34",
+      "category": "67fe2e2df81a0a4e10fd9979",
+      "purchaseDate": "2021-09-01",
+      "purchasePrice": 130000,
+      "condition": "damaged"
+    },
+    {
+      "name": "iPad 10th Gen",
+      "description": "Apple iPad for staff",
+      "location": "67fe31a01837aef6adcc0e34",
+      "category": "67fe2e2df81a0a4e10fd9979",
+      "purchaseDate": "2023-05-01",
+      "purchasePrice": 95000,
+      "condition": "new"
+    },
+    {
+      "name": "HP Envy x360",
+      "description": "Touch screen convertible laptop",
+      "location": "67fe31a01837aef6adcc0e34",
+      "category": "67fe2e2df81a0a4e10fd9979",
+      "purchaseDate": "2022-06-15",
+      "purchasePrice": 105000,
+      "condition": "new"
+    },
+    {
+      "name": "Canon EOS 1500D",
+      "description": "DSLR camera for media team",
+      "location": "67fe31a01837aef6adcc0e34",
+      "category": "67fe2e2df81a0a4e10fd9979",
+      "purchaseDate": "2021-04-04",
+      "purchasePrice": 68000,
+      "condition": "used"
+    },
+    {
+      "name": "Sony Projector VPL",
+      "description": "Conference room projector",
+      "location": "67fe31a01837aef6adcc0e34",
+      "category": "67fe2e2df81a0a4e10fd9979",
+      "purchaseDate": "2022-02-28",
+      "purchasePrice": 120000,
+      "condition": "used"
+    },
+    {
+      "name": "TP-Link Router AX1500",
+      "description": "WiFi 6 Gigabit Router",
+      "location": "67fe31a01837aef6adcc0e34",
+      "category": "67fe2e2df81a0a4e10fd9979",
+      "purchaseDate": "2023-01-01",
+      "purchasePrice": 15000,
+      "condition": "new"
+    },
+    {
+      "name": "Dell Docking Station WD19",
+      "description": "For laptop accessories and display",
+      "location": "67fe31a01837aef6adcc0e34",
+      "category": "67fe2e2df81a0a4e10fd9979",
+      "purchaseDate": "2023-06-20",
+      "purchasePrice": 18000,
+      "condition": "new"
+    }
+  ]
+  

@@ -24,22 +24,22 @@ const userSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ['active', 'inactive'],
-      default: 'active'
+      enum: ['checkin', 'checkout'],
+      // default: 'active'
     },
 
-    // history: [
-    //   {
-    //     checkin: {
-    //       type: Date,
-    //       default: Date.now
-    //     },
-    //     checkout: {
-    //       type: Date,
-    //       default: Date.now
-    //     }
-    //   }
-    // ]
+    history: [
+      {
+        checkin: {
+          type: Date,
+          default: ''
+        },
+        checkout: {
+          type: Date,
+          default: ''
+        }
+      }
+    ]
 
     // role: { type: mongoose.Schema.Types.ObjectId, ref: 'Role' },
 

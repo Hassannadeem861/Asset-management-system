@@ -6,7 +6,7 @@ import nodemailer from "nodemailer";
 
 dotenv.config();
 
-const register = async (req, res) => {c
+const register = async (req, res) => {
 
     try {
 

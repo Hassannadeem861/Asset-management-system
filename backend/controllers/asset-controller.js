@@ -3,32 +3,113 @@ import userModel from "../models/user-auth-modle.js";
 import adminModel from "../models/admin-auth-model.js";
 import mongoose from "mongoose";
 
+
 const createAsset = async (req, res) => {
+
     try {
 
-        const { name, description, category, location, assignee, assignedBy, purchaseDate, purchasePrice, status, condition } = req.body;
+        const { name, description, category, location, assignee, purchaseDate, purchasePrice, status, condition } = req.body;
 
         if (!name || !description || !category || !location || !purchaseDate || !purchasePrice || !condition) {
             return res.status(400).json({ message: "Please fill in all required fields" });
         }
+
+
+        const user = await userModel.findById(assignee);
+
+        if (!user) {
+            return res.status(404).json({ message: "First, register yourself as an admin." });
+        }
+
+        if (assignee) {
+            const alreadyAssigned = await assetModel.findOne({ assignee })
+            if (alreadyAssigned && alreadyAssigned.assignee.toString() === assignee.toString()) {
+                return res.status(400).json({ message: `Asset already assigned to user` });
+            }
+
+        }
+
 
         const asset = await assetModel.create({
             name,
             description,
             category,
             location,
-            assignee,
-            assignedBy,
+            assignee: assignee || null,
             purchaseDate,
             purchasePrice,
-            status,
+            status: assignee ? "in use" : "available",
             condition
         });
+
+        if (assignee) {
+            await userModel.findByIdAndUpdate(assignee, { status: "checkin" });
+            user.history.push({ checkin: new Date() });
+            await user.save();
+        }
+
 
         return res.status(201).json({ message: "Asset created successfully", asset });
 
     } catch (error) {
         return res.status(500).json({ message: "Error creating asset", error: error.message });
+    }
+}
+
+const uploadBulkAssets = async (req, res) => {
+
+    try {
+
+        const assets = req.body;
+
+        if (!Array.isArray(req.body) || req.body.length === 0) {
+            return res.status(400).json({ message: "Please provide an array of assets" });
+        }
+
+        const createAssets = assets.map((asset) => {
+            const {
+                name,
+                description,
+                category,
+                location,
+                assignee,
+                purchaseDate,
+                purchasePrice,
+                condition,
+                status
+            } = asset
+
+            if (!name || !description || !category || !location || !purchaseDate || !purchasePrice || !condition) {
+                throw new Error("Missing required fields in one or more assets.");
+            }
+
+            return {
+                name,
+                description,
+                category,
+                location,
+                assignee: assignee || null,
+                purchaseDate,
+                purchasePrice,
+                status,
+                condition
+            }
+
+
+        });
+
+        const createdAssets = await assetModel.insertMany(createAssets);
+
+        return res.status(201).json({
+            message: "Assets uploaded successfully",
+            createdAssets
+        });
+
+
+    } catch (error) {
+
+        return res.status(500).json({ message: "Error uploading bulk assets", error: error.message });
+
     }
 }
 
@@ -46,7 +127,6 @@ const getAllAsset = async (req, res) => {
             .populate("location")
             .populate("category")
             .populate("assignee")
-            .populate("assignedBy")
             .skip(skip)
             .limit(limit);
 
@@ -180,13 +260,34 @@ const searchAssets = async (req, res) => {
 };
 
 const updateAsset = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { name, description, category, location, purchaseDate, purchasePrice, status, condition } = req.body;
 
-        if (!name || !description || !category || !location || !purchaseDate || !purchasePrice || !qrCode) {
+    try {
+
+        const { id } = req.params;
+        const { name, description, category, location, purchaseDate, assignee, purchasePrice, condition } = req.body;
+
+        if (!name || !description || !category || !location || !purchaseDate || !purchasePrice) {
             return res.status(400).json({ message: "Please fill in all required fields" });
         }
+
+
+        const user = await userModel.findById(assignee);
+
+        if (!user) {
+            return res.status(404).json({ message: "First, register yourself as an admin." });
+        }
+
+
+        if (assignee) {
+            const alreadyAssigned = await assetModel.findOne({ assignee })
+            if (alreadyAssigned && alreadyAssigned.assignee.toString() === assignee.toString()) {
+                const currentUserName = alreadyAssigned?.assignee?._id || "unknown";
+                return res.status(400).json({ message: `Asset already assigned to ${currentUserName}` });
+            }
+
+
+        }
+
 
         const asset = await assetModel.findByIdAndUpdate(id, {
             name,
@@ -195,13 +296,19 @@ const updateAsset = async (req, res) => {
             location,
             purchaseDate,
             purchasePrice,
-            status,
-            condition
+            status: assignee ? "in use" : "available",
+            condition,
+            assignee: assignee || null,
         }, { new: true });
 
-        if (!asset) {
-            return res.status(404).json({ message: "Asset not found" });
+
+        if (assignee) {
+            await userModel.findByIdAndUpdate(assignee, { status: "checkin" });
+            user.history.push({ checkin: new Date() });
+            await user.save();
         }
+
+
 
         return res.status(200).json({ message: "Asset updated successfully", asset });
 
@@ -296,4 +403,4 @@ const assignAsset = async (req, res) => {
 
 
 
-export { createAsset, getAllAsset, getSingleAsset, updateAsset, deleteAsset, assignAsset, getFilterData, searchAssets };
+export { createAsset, getAllAsset, getSingleAsset, updateAsset, deleteAsset, getFilterData, searchAssets, uploadBulkAssets };

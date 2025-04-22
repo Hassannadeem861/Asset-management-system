@@ -5,6 +5,7 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 
 import connectDB from "./config/db.mjs";
+import redis from './config/redis.mjs';
 
 
 const app = express();
@@ -24,6 +25,16 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(morgan("dev"));
 app.use(cookieParser());
+
+app.get("/redis", async (req, res) => {
+  try {
+    await redis.set("message", "Hello from Redis!");
+    const message = await redis.get("message");
+    res.json({ message });
+  } catch (error) {
+    res.status(500).json({ error: "Redis Error", details: error.message });
+  }
+});
 
 import adminAuthRouter from "./routes/admin-auth-route.js";
 import userAuthRouter from "./routes/user-auth-route.js";
