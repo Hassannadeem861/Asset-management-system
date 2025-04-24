@@ -1,5 +1,6 @@
 import checkinCheckoutModel from "../models/checkin-checkout-model.js";
 import assetModel from "../models/asset-model.js";
+import userModel from "../models/user-auth-modle.js";
 
 
 
@@ -56,47 +57,86 @@ const checkoutAsset = async (req, res) => {
 
     try {
 
-        const { assetId } = req.params;
-        const { checkOutUser } = req.body;
+        const { checkOutUserId, assetId } = req.body;
 
-        if (!assetId) {
-            return res.status(400).json({ message: "asset ID is required" });
+
+        if (!checkOutUserId || !assetId) {
+            return res.status(400).json({ message: "User ID and Asset ID are required." });
         }
 
-        if (!checkOutUser) {
-            return res.status(400).json({ message: "All fields are required" });
-        }
-
-
-        const asset = await assetModel.findById(assetId);
-        console.log(asset.assignee);
-        
-
+        const [asset, user] = await Promise.all([
+            assetModel.findById(assetId).lean(),
+            userModel.findById(checkOutUserId)
+        ]);
 
         if (!asset) {
-            return res.status(404).json({ message: "Asset not found" });
+            return res.status(404).json({ message: "Asset not found." });
         }
 
-        if (String(asset.assignee) !== String(checkOutUser)) {
-            return res.status(403).json({ message: "You are not the assignee of this asset" });
+        if (!user) {
+            return res.status(404).json({ message: "User not found." });
         }
 
-        const lastRecord = await checkinCheckoutModel.findOne({ asset: assetId }).sort({ createdAt: -1 });
+        if (String(asset.assignee) !== String(checkOutUserId)) {
+            return res.status(403).json({ message: "This asset is not assigned to the provided user." });
+        }
 
-        if (!lastRecord || lastRecord.status !== "checked-in") {
+        // const lastRecord = await checkinCheckoutModel.findOne({ asset: assetId }).sort({ createdAt: -1 });
+
+        if (!user || user.status !== "checkin") {
             return res.status(400).json({ message: "Cannot checkout. Asset is not checked in yet" });
         }
 
-        const record = await checkinCheckoutModel.create({
-            asset: assetId,
-            checkOutUser,
-            status: "checked-out"
-        })
+        // const record = await checkinCheckoutModel.create({
+        //     asset: assetId,
+        //     checkOutUserId,
+        //     status: "checked-out"
+        // })
 
-        await assetModel.findByIdAndUpdate(assetId, { status: "available", assignee: null, assignedBy: null });
-        // await assetModel.findByIdAndDelete(asset.assignee);
+        await Promise.all([
+            assetModel.findByIdAndUpdate(assetId, {
+                status: "available",
+                assignee: null,
+            }),
 
-        return res.status(201).json({ message: "Checkout asset successfully", record });
+            userModel.findByIdAndUpdate(checkOutUserId, {
+                status: "checkout",
+            })
+        ]);
+
+
+        const assetIdStr = assetId.toString();
+        const today = new Date();
+        const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+        const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+
+        let updated = false;
+
+        user.history = user.history.map(entry => {
+            const isSameAsset = entry.asset.toString() === assetIdStr;
+            const isToday = entry.checkin && new Date(entry.checkin) >= startOfDay && new Date(entry.checkin) <= endOfDay;
+
+            if (isSameAsset && isToday && !entry.checkout) {
+                entry.checkout = new Date();
+                updated = true;
+            }
+            return entry;
+        });
+
+        if (updated) {
+            await Promise.all([
+                assetModel.findByIdAndUpdate(assetId, {
+                    status: "available",
+                    assignee: null,
+                }),
+                user.save()
+            ]);
+            return res.status(201).json({ message: "Checkout asset successfully" });
+        } else {
+            return res.status(400).json({ message: "No valid checkin found for today to checkout." });
+        }
+
+        return res.status(201).json({ message: "Checkout asset successfully" });
 
 
     } catch (error) {
@@ -206,4 +246,4 @@ const deleteCheckinCheckoutRecord = async (req, res) => {
 
 
 
-export { checkinAsset, checkoutAsset, getCheckinCheckoutRecords, getSingleCheckinCheckoutRecord, updateCheckinCheckoutRecord, deleteCheckinCheckoutRecord };
+export { checkoutAsset, getCheckinCheckoutRecords, getSingleCheckinCheckoutRecord, updateCheckinCheckoutRecord, deleteCheckinCheckoutRecord };

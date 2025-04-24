@@ -42,7 +42,7 @@ import roleRouter from "./routes/role-route.js";
 import categoryRoute from "./routes/category-route.js";
 import locationRoute from "./routes/location-route.js";
 import assetRoute from "./routes/asset-route.js";
-import checkinCheckoutRoute from "./routes/checkin-checkout-route.js";
+import historyRoute from "./routes/history-route.js";
 import transferHistoryRoute from "./routes/transfer-history-route.js";
 import repairRoute from "./routes/repair-route.js";
 
@@ -52,7 +52,7 @@ app.use("/api/v1", roleRouter);
 app.use("/api/v1", categoryRoute);
 app.use("/api/v1", locationRoute);
 app.use("/api/v1", assetRoute);
-app.use("/api/v1", checkinCheckoutRoute);
+app.use("/api/v1", historyRoute);
 app.use("/api/v1", transferHistoryRoute);
 app.use("/api/v1", repairRoute);
 

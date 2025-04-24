@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/user-auth-modle.js";
-import dotenv from "dotenv";
+import dotenv, { populate } from "dotenv";
 import nodemailer from "nodemailer";
 
 dotenv.config();
@@ -110,7 +110,28 @@ const getAllUsers = async (req, res) => {
         const users = await User.find()
             .skip(skip)
             .limit(limit)
-            // .populate("role", "permissions")
+            .populate([
+                {
+                    path: "history.asset",
+                    select: "name description purchaseDate purchasePrice status condition",
+
+                    populate: [
+                        {
+                            path: "category",
+                            select: "_id name"
+                        },
+                        {
+                            path: "location",
+                            select: "_id name address city"
+                        },
+                        {
+                            path: "assignee",
+                            select: "_id username cnic phone history"
+                        },
+
+                    ]
+                }
+            ])
             .sort({ createdAt: -1 });
 
 
