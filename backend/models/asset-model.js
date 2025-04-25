@@ -13,7 +13,6 @@ const assetSchema = new mongoose.Schema({
     status: { type: String, enum: ['available', 'in use', 'Under repair'], default: 'available', index: true },
     condition: { type: String, enum: ['new', 'used', 'damaged'], default: 'new' },
 
-
 }, { timestamps: true });
 
 export default mongoose.model('Asset', assetSchema);

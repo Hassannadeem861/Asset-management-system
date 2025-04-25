@@ -14,13 +14,20 @@ const isSameDay = (d1, d2) => {
 
 const createAsset = async (req, res) => {
     try {
-        const { name, description, category, location, assignee, purchaseDate, purchasePrice, condition } = req.body;
+        const {
+            name, description, category, location,
+            assignee, purchaseDate, purchasePrice,
+            condition, quantity
+        } = req.body;
+
+        const qua = quantity ? quantity : 1;
 
         if (!name || !description || !category || !location || !purchaseDate || !purchasePrice || !condition) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
         let user = null;
+
         if (assignee) {
             user = await userModel.findById(assignee);
             if (!user) return res.status(404).json({ message: "Assignee user not found" });
@@ -29,34 +36,59 @@ const createAsset = async (req, res) => {
             if (alreadyAssigned) return res.status(400).json({ message: "Asset already assigned to this user" });
         }
 
-        const asset = await assetModel.create({
-            name, description, category, location,
-            assignee: assignee || null,
-            purchaseDate, purchasePrice,
-            status: assignee ? "in use" : "available",
-            condition
-        });
+        const assetsToInsert = [];
 
+        for (let i = 0; i < qua; i++) {
+            const isFirstAsset = i === 0 && assignee;
+
+            assetsToInsert.push({
+                name,
+                description,
+                category,
+                location,
+                assignee: isFirstAsset ? assignee : null,
+                purchaseDate,
+                purchasePrice,
+                status: isFirstAsset ? "in use" : "available",
+                condition
+            });
+        }
+
+        const insertedAssets = await assetModel.insertMany(assetsToInsert);
+
+        // History only for first asset assigned
         if (assignee) {
-            // await userModel.findByIdAndUpdate(assignee, { status: "checkin" });
-
             const today = new Date();
+            const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+
             const existingCheckin = await historyModel.findOne({
                 user: assignee,
-                asset: asset._id,
-                checkin: { $gte: new Date(today.setHours(0, 0, 0, 0)) }
+                asset: insertedAssets[0]._id,
+                checkin: { $gte: startOfDay }
             });
 
             if (!existingCheckin) {
-                await historyModel.create({ user: assignee, asset: asset._id, checkin: new Date() });
+                await historyModel.create({
+                    user: assignee,
+                    asset: insertedAssets[0]._id,
+                    checkin: new Date()
+                });
             }
         }
 
-        return res.status(201).json({ message: "Asset created successfully", asset });
+        return res.status(201).json({
+            message: "Asset created successfully",
+            asset: insertedAssets
+        });
+
     } catch (error) {
-        return res.status(500).json({ message: "Asset creation failed", error: error.message });
+        return res.status(500).json({
+            message: "Asset creation failed",
+            error: error.message
+        });
     }
 };
+
 
 const uploadBulkAssets = async (req, res) => {
 
@@ -160,13 +192,13 @@ const getAllAsset = async (req, res) => {
 }
 
 const getSingleAsset = async (req, res) => {
-    
+
     try {
 
         const { id } = req.params;
-        
+
         const asset = await assetModel.findById(id).populate("location").populate("category").populate("assignee")
-       
+
         if (!asset) {
             return res.status(404).json({ message: "Asset not found" });
         }

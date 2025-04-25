@@ -7,7 +7,6 @@ const transferHistorySchema = new mongoose.Schema({
     toLocation: { type: mongoose.Schema.Types.ObjectId, ref: 'Location', required: true },
     fromUser: { type: mongoose.Schema.Types.ObjectId, ref: 'Auth', required: true },
     toUser: { type: mongoose.Schema.Types.ObjectId, ref: 'Auth', required: true },
-    assignedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'aAdminAuth', required: true },
     transferDate: { type: Date, required: true },
 
 

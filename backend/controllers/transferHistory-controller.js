@@ -8,11 +8,11 @@ const createTransfer = async (req, res) => {
 
     try {
 
-        const { asset, fromLocation, toLocation, fromUser, toUser, assignedBy } = req.body;
+        const { asset, fromLocation, toLocation, fromUser, toUser } = req.body;
 
-        if (!asset || !fromLocation || !toLocation || !fromUser || !toUser || !assignedBy) {
+        if (!asset || !fromLocation || !toLocation || !fromUser || !toUser) {
             return res.status(400).json({
-                message: "All fields (asset, fromLocation, toLocation, fromUser, toUser, assignedBy) are required to proceed with the transfer."
+                message: "All fields (asset, fromLocation, toLocation, fromUser, toUser) are required to proceed with the transfer."
             });
         }
 
@@ -22,7 +22,6 @@ const createTransfer = async (req, res) => {
             locationModel.findById(toLocation),
             userModel.findById(fromUser),
             userModel.findById(toUser),
-            adminModel.findById(assignedBy)
         ]);
 
 
@@ -51,22 +50,20 @@ const createTransfer = async (req, res) => {
             toLocation,
             fromUser,
             toUser,
-            assignedBy,
             transferDate: new Date()
         });
 
         assetDoc.assignee = toUser;
-        assetDoc.assignedBy = assignedBy;
         assetDoc.location = toLocation;
         assetDoc.status = "available";
         await assetDoc.save();
 
         return res.status(201).json({
-            message: "Asset transferred successfully and transfer history recorded.",
+            message: "Asset transferred successfully",
             transferHistory
         });
     } catch (error) {
-        return res.status(500).json({ message: "Error creating transfer history", error: error.message });
+        return res.status(500).json({ message: "Error creating transfer", error: error.message });
     }
 }
 
