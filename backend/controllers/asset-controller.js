@@ -38,7 +38,7 @@ const createAsset = async (req, res) => {
         });
 
         if (assignee) {
-            await userModel.findByIdAndUpdate(assignee, { status: "checkin" });
+            // await userModel.findByIdAndUpdate(assignee, { status: "checkin" });
 
             const today = new Date();
             const existingCheckin = await historyModel.findOne({
@@ -160,15 +160,19 @@ const getAllAsset = async (req, res) => {
 }
 
 const getSingleAsset = async (req, res) => {
+    
     try {
-        const { id } = req.params;
-        const asset = await assetModel.findById(id).populate("location").populate("category").populate("assignee").populate("assignedBy");
 
+        const { id } = req.params;
+        
+        const asset = await assetModel.findById(id).populate("location").populate("category").populate("assignee")
+       
         if (!asset) {
             return res.status(404).json({ message: "Asset not found" });
         }
 
         return res.status(200).json({ message: "Fetch single asset successfully", asset });
+
     } catch (error) {
         return res.status(500).json({ message: "Error fetching asset", error: error.message });
     }
@@ -266,124 +270,118 @@ const searchAssets = async (req, res) => {
 
 const updateAsset = async (req, res) => {
     try {
-        
-      const { id } = req.params;
-      const {
-        name, description, category, location,
-        purchaseDate, assignee, purchasePrice, condition
-      } = req.body;
-  
-      if (!name || !description || !category || !location || !purchaseDate || !purchasePrice) {
-        return res.status(400).json({ message: "All fields are required" });
-      }
-  
-      const oldAsset = await assetModel.findById(id);
-      if (!oldAsset) return res.status(404).json({ message: "Asset not found" });
-  
-      // STEP 1: Checkout if previously assigned and now unassigned or reassigned
-      if (oldAsset.assignee && (!assignee || oldAsset.assignee.toString() !== assignee)) {
-        await historyModel.findOneAndUpdate(
-          {
-            user: oldAsset.assignee,
-            asset: id,
-            checkout: null
-          },
-          { checkout: new Date() }
+
+        const { id } = req.params;
+        const {
+            name, description, category, location,
+            purchaseDate, assignee, purchasePrice, condition
+        } = req.body;
+
+        if (!name || !description || !category || !location || !purchaseDate || !purchasePrice) {
+            return res.status(400).json({ message: "All fields are required" });
+        }
+
+        const oldAsset = await assetModel.findById(id);
+        if (!oldAsset) return res.status(404).json({ message: "Asset not found" });
+
+        if (oldAsset.assignee && (!assignee || oldAsset.assignee.toString() !== assignee)) {
+            await historyModel.findOneAndUpdate(
+                {
+                    user: oldAsset.assignee,
+                    asset: id,
+                    checkout: null
+                },
+                { checkout: new Date() }
+            );
+        }
+
+        if (assignee) {
+            const user = await userModel.findById(assignee);
+            if (!user) return res.status(404).json({ message: "Assignee user not found" });
+
+            const alreadyAssigned = await assetModel.findOne({ assignee });
+            if (alreadyAssigned && alreadyAssigned._id.toString() !== id) {
+                return res.status(400).json({ message: "Asset already assigned to this user" });
+            }
+
+            const today = new Date();
+            const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+            const existingCheckin = await historyModel.findOne({
+                user: assignee,
+                asset: id,
+                checkin: { $gte: startOfDay }
+            });
+
+            if (!existingCheckin) {
+                await historyModel.create({
+                    user: assignee,
+                    asset: id,
+                    checkin: new Date()
+                });
+            }
+
+            // await userModel.findByIdAndUpdate(assignee, { status: "checkin" });
+        }
+
+        const updatedAsset = await assetModel.findByIdAndUpdate(
+            id,
+            {
+                name,
+                description,
+                category,
+                location,
+                purchaseDate,
+                purchasePrice,
+                condition,
+                assignee: assignee || null,
+                status: assignee ? "in use" : "available",
+            },
+            { new: true }
         );
-      }
-  
-      // STEP 2: If new assignee is provided
-      if (assignee) {
-        const user = await userModel.findById(assignee);
-        if (!user) return res.status(404).json({ message: "Assignee user not found" });
-  
-        const alreadyAssigned = await assetModel.findOne({ assignee });
-        if (alreadyAssigned && alreadyAssigned._id.toString() !== id) {
-          return res.status(400).json({ message: "Asset already assigned to this user" });
-        }
-  
-        // Check if already checked in today
-        const today = new Date();
-        const startOfDay = new Date(today.setHours(0, 0, 0, 0));
-        const existingCheckin = await historyModel.findOne({
-          user: assignee,
-          asset: id,
-          checkin: { $gte: startOfDay }
-        });
-  
-        if (!existingCheckin) {
-          await historyModel.create({
-            user: assignee,
-            asset: id,
-            checkin: new Date()
-          });
-        }
-  
-        // Optional: Update user status
-        await userModel.findByIdAndUpdate(assignee, { status: "checkin" });
-      }
-  
-      // STEP 3: Update the asset itself
-      const updatedAsset = await assetModel.findByIdAndUpdate(
-        id,
-        {
-          name,
-          description,
-          category,
-          location,
-          purchaseDate,
-          purchasePrice,
-          condition,
-          assignee: assignee || null,
-          status: assignee ? "in use" : "available",
-        },
-        { new: true }
-      );
-  
-      return res.status(200).json({ message: "Asset updated successfully", asset: updatedAsset });
-  
-    } catch (error) {
-      return res.status(500).json({ message: "Asset update failed", error: error.message });
-    }
-  };
-  
 
-const checkoutAsset = async (req, res) => {
-    try {
-      const { id } = req.params; // asset id
-  
-      const asset = await assetModel.findById(id);
+        return res.status(200).json({ message: "Asset updated successfully", asset: updatedAsset });
 
-      if (!asset || !asset.assignee) {
-        return res.status(400).json({ message: "Asset is not assigned to anyone" });
-      }
-  
-      // Step 1: Set asset as available
-      const userId = asset.assignee;
-      asset.assignee = null;
-      asset.status = "available";
-      await asset.save();
-  
-      // Step 2: Update history: find record with null checkout
-      const history = await historyModel.findOne({
-        user: userId,
-        asset: id,
-        checkout: null
-      });
-  
-      if (!history) {
-        return res.status(404).json({ message: "No active checkin record found for this asset" });
-      }
-  
-      history.checkout = new Date();
-      await history.save();
-  
-      res.status(200).json({ message: "Asset checked out successfully", asset, history });
-  
     } catch (error) {
-      res.status(500).json({ message: "Checkout failed", error: error.message });
+        return res.status(500).json({ message: "Asset update failed", error: error.message });
     }
-  };
+};
+
+// const checkoutAsset = async (req, res) => {
+//     try {
+//         const { id } = req.params; // asset id
+
+//         const asset = await assetModel.findById(id);
+
+//         if (!asset || !asset.assignee) {
+//             return res.status(400).json({ message: "Asset is not assigned to anyone" });
+//         }
+
+//         // Step 1: Set asset as available
+//         const userId = asset.assignee;
+//         asset.assignee = null;
+//         asset.status = "available";
+//         await asset.save();
+
+//         // Step 2: Update history: find record with null checkout
+//         const history = await historyModel.findOne({
+//             user: userId,
+//             asset: id,
+//             checkout: null
+//         });
+
+//         if (!history) {
+//             return res.status(404).json({ message: "No active checkin record found for this asset" });
+//         }
+
+//         history.checkout = new Date();
+//         await history.save();
+
+//         res.status(200).json({ message: "Asset checked out successfully", asset, history });
+
+//     } catch (error) {
+//         res.status(500).json({ message: "Checkout failed", error: error.message });
+//     }
+// };
 
 const deleteAsset = async (req, res) => {
     try {
@@ -470,4 +468,4 @@ const assignAsset = async (req, res) => {
 
 
 
-export { createAsset, getAllAsset, getSingleAsset, updateAsset, checkoutAsset, deleteAsset, getFilterData, searchAssets, uploadBulkAssets };
+export { createAsset, getAllAsset, getSingleAsset, updateAsset, deleteAsset, getFilterData, searchAssets, uploadBulkAssets };

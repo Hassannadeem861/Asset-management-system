@@ -24,8 +24,8 @@ const userSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ['checkin', 'checkout'],
-      // default: 'active'
+      enum: ['active', 'inactive'],
+      default: 'active'
     },
 
     // history: [
