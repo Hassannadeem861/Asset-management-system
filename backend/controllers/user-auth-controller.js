@@ -110,28 +110,28 @@ const getAllUsers = async (req, res) => {
         const users = await User.find()
             .skip(skip)
             .limit(limit)
-            .populate([
-                {
-                    path: "history.asset",
-                    select: "name description purchaseDate purchasePrice status condition",
+            // .populate([
+            //     {
+            //         path: "asset",
+            //         select: "name description purchaseDate purchasePrice status condition",
 
-                    populate: [
-                        {
-                            path: "category",
-                            select: "_id name"
-                        },
-                        {
-                            path: "location",
-                            select: "_id name address city"
-                        },
-                        {
-                            path: "assignee",
-                            select: "_id username cnic phone history"
-                        },
+            //         populate: [
+            //             {
+            //                 path: "category",
+            //                 select: "_id name"
+            //             },
+            //             {
+            //                 path: "location",
+            //                 select: "_id name address city"
+            //             },
+            //             {
+            //                 path: "assignee",
+            //                 select: "_id username cnic phone history"
+            //             },
 
-                    ]
-                }
-            ])
+            //         ]
+            //     }
+            // ])
             .sort({ createdAt: -1 });
 
 

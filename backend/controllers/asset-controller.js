@@ -28,7 +28,9 @@ const createAsset = async (req, res) => {
             user = await userModel.findById(assignee);
             if (!user) return res.status(404).json({ message: "Assignee user not found" });
 
-            const alreadyAssigned = await assetModel.findOne({ assignee });
+            const alreadyAssigned = await assetModel.findOne({ assignee })
+            console.log();
+            
             if (alreadyAssigned) return res.status(400).json({ message: "Asset already assigned to this user" });
         }
 
@@ -50,7 +52,7 @@ const createAsset = async (req, res) => {
             });
         }
 
-        const insertedAssets = await assetModel.insertMany(assetsToInsert);
+        const insertedAssets = await assetModel.insertMany(assetsToInsert)
 
         if (assignee) {
             const today = new Date();
