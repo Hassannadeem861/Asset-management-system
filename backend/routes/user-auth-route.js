@@ -4,6 +4,7 @@ import {
   login,
   logout,
   getAllUsers,
+  getSingleUser,
   updateUser,
   deleteUser,
   getProfile,
@@ -19,6 +20,7 @@ router.post("/register", register);
 router.post("/login", login);
 router.get("/logout", logout);
 router.get("/get-all-users", getAllUsers);
+router.get("/get-single-user", getSingleUser);
 router.put("/update-user/:id", authMiddleware, updateUser);
 router.delete("/delete-user/:id", authMiddleware, deleteUser);
 router.get("/get-profile", authMiddleware, getProfile);
