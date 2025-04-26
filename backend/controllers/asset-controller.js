@@ -6,13 +6,9 @@ import mongoose from "mongoose";
 
 
 
-const isSameDay = (d1, d2) => {
-    return d1.getFullYear() === d2.getFullYear() &&
-        d1.getMonth() === d2.getMonth() &&
-        d1.getDate() === d2.getDate();
-};
 
 const createAsset = async (req, res) => {
+    
     try {
         const {
             name, description, category, location,
@@ -56,7 +52,6 @@ const createAsset = async (req, res) => {
 
         const insertedAssets = await assetModel.insertMany(assetsToInsert);
 
-        // History only for first asset assigned
         if (assignee) {
             const today = new Date();
             const startOfDay = new Date(today.setHours(0, 0, 0, 0));
@@ -88,7 +83,6 @@ const createAsset = async (req, res) => {
         });
     }
 };
-
 
 const uploadBulkAssets = async (req, res) => {
 

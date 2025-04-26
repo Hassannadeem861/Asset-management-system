@@ -5,7 +5,7 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 
 import connectDB from "./config/db.mjs";
-import redis from './config/redis.mjs';
+import redis from './config/redis.js';
 
 
 const app = express();

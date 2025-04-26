@@ -63,7 +63,7 @@ const getSingleCategory = async (req, res) => {
     }
 }
 
-const updateAsset = async (req, res) => {
+const updateCategory = async (req, res) => {
     try {
 
         const { id } = req.params;
@@ -92,7 +92,7 @@ const updateAsset = async (req, res) => {
 };
 
 
-const deleteAsset = async (req, res) => {
+const deleteCategory = async (req, res) => {
     try {
 
         const { id } = req.params;
@@ -113,4 +113,4 @@ const deleteAsset = async (req, res) => {
     }
 }
 
-export { createCategory, getAllCategory, getSingleCategory, updateAsset, deleteAsset };
+export { createCategory, getAllCategory, getSingleCategory, updateCategory, deleteCategory };
