@@ -8,7 +8,7 @@ import mongoose from "mongoose";
 
 
 const createAsset = async (req, res) => {
-    
+
     try {
         const {
             name, description, category, location,
@@ -30,7 +30,7 @@ const createAsset = async (req, res) => {
 
             const alreadyAssigned = await assetModel.findOne({ assignee })
             console.log();
-            
+
             if (alreadyAssigned) return res.status(400).json({ message: "Asset already assigned to this user" });
         }
 
@@ -158,8 +158,7 @@ const getAllAsset = async (req, res) => {
             .populate("category")
             .populate("assignee")
             .skip(skip)
-            .limit(limit);
-
+            .limit(limit)
 
         if (!assets || assets.length === 0) {
             return res.status(404).json({ message: "No asset found" })
@@ -205,6 +204,8 @@ const getSingleAsset = async (req, res) => {
         return res.status(500).json({ message: "Error fetching asset", error: error.message });
     }
 }
+
+
 
 const getFilterData = async (req, res) => {
 

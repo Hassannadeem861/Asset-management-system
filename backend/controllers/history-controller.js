@@ -1,4 +1,6 @@
 import HistoryModel from "../models/history-model.js";
+import assetModel from "../models/asset-model.js";
+import historyModel from "../models/history-model.js";
 
 
 const getAllHistory = async (req, res) => {
@@ -47,6 +49,43 @@ const getSingleHistory = async (req, res) => {
     }
 };
 
+const getSingleAssetHistory = async (req, res) => {
+
+    try {
+
+        const { assetId } = req.params
+
+        if (!assetId) {
+            return res.status(400).json({ message: "Asset ID is required" });
+        }
+
+        const historyRecords = await historyModel.find({ asset: assetId })
+            .populate({
+                path: "user",
+                select: "username email cnic phone address role status"
+            })
+            .populate({
+                path: "asset",
+                select: "name description location category assignee purchaseDate purchasePrice status condition"
+            })
+
+        if (!historyRecords.length) {
+            return res.status(404).json({ message: "No history found for this asset" });
+        }
+
+        return res.status(200).json({
+            message: "Single asset history fetched successfully",
+            count: historyRecords.length,
+            history: historyRecords
+        });
+
+
+    } catch (error) {
+        return res.status(500).json({ message: "Error get single history", error: error.message });
+
+    }
+}
+
 const deleteHistory = async (req, res) => {
     try {
 
@@ -56,11 +95,11 @@ const deleteHistory = async (req, res) => {
             return res.status(404).json({ message: "History record not found" });
         }
 
-       return res.status(200).json({ message: "History deleted successfully" });
+        return res.status(200).json({ message: "History deleted successfully" });
 
     } catch (error) {
-       return res.status(500).json({ message: "Failed to delete history", error: error.message });
+        return res.status(500).json({ message: "Failed to delete history", error: error.message });
     }
 };
 
-export { getAllHistory, getSingleHistory, deleteHistory }
+export { getAllHistory, getSingleHistory, getSingleAssetHistory, deleteHistory }
