@@ -205,8 +205,6 @@ const getSingleAsset = async (req, res) => {
     }
 }
 
-
-
 const getFilterData = async (req, res) => {
 
     try {
@@ -375,43 +373,6 @@ const updateAsset = async (req, res) => {
     }
 };
 
-// const checkoutAsset = async (req, res) => {
-//     try {
-//         const { id } = req.params; // asset id
-
-//         const asset = await assetModel.findById(id);
-
-//         if (!asset || !asset.assignee) {
-//             return res.status(400).json({ message: "Asset is not assigned to anyone" });
-//         }
-
-//         // Step 1: Set asset as available
-//         const userId = asset.assignee;
-//         asset.assignee = null;
-//         asset.status = "available";
-//         await asset.save();
-
-//         // Step 2: Update history: find record with null checkout
-//         const history = await historyModel.findOne({
-//             user: userId,
-//             asset: id,
-//             checkout: null
-//         });
-
-//         if (!history) {
-//             return res.status(404).json({ message: "No active checkin record found for this asset" });
-//         }
-
-//         history.checkout = new Date();
-//         await history.save();
-
-//         res.status(200).json({ message: "Asset checked out successfully", asset, history });
-
-//     } catch (error) {
-//         res.status(500).json({ message: "Checkout failed", error: error.message });
-//     }
-// };
-
 const deleteAsset = async (req, res) => {
     try {
         const { id } = req.params;
@@ -429,72 +390,73 @@ const deleteAsset = async (req, res) => {
     }
 }
 
-const assignAsset = async (req, res) => {
-
+const checkInAsset = async (req, res) => {
     try {
 
-        const id = req.params.id;
-        const { assignee, assignedBy } = req.body;
+        const { assetId } = req.params
 
-        if (!id) {
-            return res.status(400).json({ message: "Please provide asset ID" });
+        const { userId } = req.body
+
+        if (!assetId || !userId) {
+            return res.status(400).json({ message: "Asset ID and User ID are required" });
         }
 
-        if (!assignee || !assignedBy) {
-            return res.status(400).json({ message: "Please fill in all required fields" });
-        }
+        await historyModel.create({
+            asset: assetId,
+            user: userId,
+            checkin: new Date()
+        })
 
-        const checkUser = await userModel.findById(assignee);
-
-        if (!checkUser) {
-            return res.status(404).json({ message: "First, register yourself as an admin." });
-        }
-
-        const checkAssignedBy = await adminModel.findById(assignedBy);
-
-        if (!checkAssignedBy) {
-            return res.status(404).json({ message: "AssignedBy user not found" });
-        }
-
-        const checkAssetId = await assetModel.findById(id).populate("assignee").populate("assignedBy");
-        console.log("checkAssetId", checkAssetId);
-
-        if (!checkAssetId) {
-            return res.status(404).json({ message: "Asset not found" });
-        }
+        await assetModel.findByIdAndUpdate(assetId, {
+            assignee: userId,
+            status: "in use"
+        })
 
 
-        if (checkAssetId.assignee) {
-            let currentUserName = checkAssetId?.assignee?._id || "unknown";
-            return res.status(400).json({ message: `Asset already assigned to ${currentUserName}` });
-        }
-
-
-        if (checkAssetId.status === "in use") {
-            return res.status(400).json({ message: `Asset already assigned` });
-        }
-
-        const asset = await assetModel.findByIdAndUpdate(id, {
-            assignee,
-            assignedBy,
-        }, { new: true });
-
-        if (!asset) {
-            return res.status(404).json({ message: "Asset not found" });
-        }
-
-
-
-        return res.status(200).json({ message: `Asset assigned successfully`, asset });
+        return res.status(200).json({ message: "Asset checked in successfully" });
 
     } catch (error) {
-        return res.status(500).json({ message: "Error assigning asset", error: error.message });
 
+        return res.status(500).json({ message: "Server error", error: error.message });
     }
 }
 
+const checkOutAsset = async (req, res) => {
+    try {
+        const { assetId } = req.params;
+        
+        const { userId } = req.body;
 
+        if (!assetId || !userId) {
+            return res.status(400).json({ message: "Asset ID and User ID are required" });
+        }
 
+        const history = await historyModel.findOneAndUpdate(
+            {
+                asset: assetId,
+                user: userId,
+                checkout: null
+            },
+            {
+                checkout: new Date()
+            }
+        );
 
+        if (!history) {
+            return res.status(404).json({ message: "No active check-in found for this asset and user" });
+        }
 
-export { createAsset, getAllAsset, getSingleAsset, updateAsset, deleteAsset, getFilterData, searchAssets, uploadBulkAssets };
+        await assetModel.findByIdAndUpdate(assetId, {
+            assignee: null,
+            status: "available"
+        });
+
+        return res.status(200).json({ message: "Asset checked out successfully" });
+
+    } catch (error) {
+        console.error("Check-out error:", error);
+        return res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+export { createAsset, getAllAsset, getSingleAsset, updateAsset, deleteAsset, getFilterData, searchAssets, uploadBulkAssets, checkInAsset, checkOutAsset };
