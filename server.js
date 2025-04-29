@@ -56,17 +56,16 @@ app.use("/api/v1", historyRoute);
 app.use("/api/v1", transferHistoryRoute);
 app.use("/api/v1", repairRoute);
 
-// Simple route
 app.get("/", (req, res) => {
   try {
     console.log("Hello")
   } catch (error) {
     console.log("Error", error)
   }
-  res.json({ message: "Welcome to hassan nadeem application." });
+  res.json({ message: "Welcome to hassan and khalid application." });
 });
 
-// Set port and listen for requests
+
 const PORT = process.env.PORT || 8081;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);
