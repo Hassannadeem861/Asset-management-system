@@ -59,6 +59,11 @@ app.use("/api/v1", repairRoute);
 
 // Simple route
 app.get("/", (req, res) => {
+  try {
+    console.log("Hello")
+  } catch (error) {
+    console.log("Error", error)
+  }
   res.json({ message: "Welcome to hassan nadeem application." });
 });
 
