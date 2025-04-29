@@ -6,7 +6,7 @@ import cookieParser from "cookie-parser";
 import connectDB from "./config/db.mjs";
 import redis from './config/redis.js';
 import dotenv from "dotenv";
-dotenv.config();
+dotenv.config('./.env');
 
 
 const app = express();
@@ -56,6 +56,7 @@ app.use("/api/v1", historyRoute);
 app.use("/api/v1", transferHistoryRoute);
 app.use("/api/v1", repairRoute);
 
+console.log(process.env.MONGODB_URI)
 
 // Simple route
 app.get("/", (req, res) => {
@@ -68,9 +69,9 @@ app.get("/", (req, res) => {
 });
 
 // Set port and listen for requests
-// const PORT = process.env.PORT || 8080;
-// app.listen(PORT, () => {
-//   console.log(`Server is running on port ${PORT}.`);
-// });
+const PORT = process.env.PORT || 8081;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}.`);
+});
 
 export default app;
