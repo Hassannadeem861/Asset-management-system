@@ -1,7 +1,6 @@
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
-// import errorMidleWare from "./middle-ware/error.middleware.mjs";
 import cookieParser from "cookie-parser";
 
 import connectDB from "./config/db.mjs";
@@ -12,7 +11,6 @@ const app = express();
 
 connectDB();
 
-// CORS options
 const corsOptions = {
   // origin: "http://localhost:8081",
   methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
