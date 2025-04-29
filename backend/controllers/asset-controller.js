@@ -143,42 +143,92 @@ const uploadBulkAssets = async (req, res) => {
     }
 }
 
+// const getAllAsset = async (req, res) => {
+
+//     try {
+
+//         const page = req.query.page || 1;
+
+//         const limit = req.query.limit || 10;
+
+//         const skip = (page - 1) * limit;
+
+//         const assets = await assetModel.find()
+//             .populate("location")
+//             .populate("category")
+//             .populate("assignee")
+//             .skip(skip)
+//             .limit(limit)
+
+//         if (!assets || assets.length === 0) {
+//             return res.status(404).json({ message: "No asset found" })
+//         }
+
+//         const totalAssets = await assetModel.countDocuments();
+
+//         const totalAvailableAssets = await assetModel.countDocuments({ status: "available" });
+//         const totalInUseAssets = await assetModel.countDocuments({ status: "in use" });
+//         const totalUnderRepairAssets = await assetModel.countDocuments({ status: "Under repair" });
+
+//         return res.status(200).json({
+//             message: "Fetch all asset successfully",
+//             assets,
+//             totalAssets,
+//             totalAvailableAssets,
+//             totalInUseAssets,
+//             totalUnderRepairAssets,
+//             currentPage: page,
+//             totalPages: Math.ceil(totalAssets / limit)
+//         });
+
+//     } catch (error) {
+//         return res.status(500).json({ message: "Error creating asset", error: error.message });
+//     }
+// }
+
 const getAllAsset = async (req, res) => {
 
     try {
 
-        const page = req.query.page || 1;
+        // const page = req.query.page || 1;
 
-        const limit = req.query.limit || 10;
+        // const limit = req.query.limit || 10;
 
-        const skip = (page - 1) * limit;
+        // const skip = (page - 1) * limit;
 
-        const assets = await assetModel.find()
-            .populate("location")
-            .populate("category")
-            .populate("assignee")
-            .skip(skip)
-            .limit(limit)
+        const assets = await assetModel.aggregate([
+            { $match: { status: "available" } },
+            { $project: { _id: 0, name: 1, description: 1, assignee: 1, createdAt: 1, updatedAt: 1 } },
+            // { $group: { _id: "$name", count: { $count: {} } } },
+            { $sort: { createdAt: -1 } }
+            // { $group: { _id: "$condition", count: { $sum: 1 } } }
+        ])
+        //  find()
+        // .populate("location")
+        // .populate("category")
+        // .populate("assignee")
+        // .skip(skip)
+        // .limit(limit)
 
         if (!assets || assets.length === 0) {
             return res.status(404).json({ message: "No asset found" })
         }
 
-        const totalAssets = await assetModel.countDocuments();
+        // const totalAssets = await assetModel.countDocuments();
 
-        const totalAvailableAssets = await assetModel.countDocuments({ status: "available" });
-        const totalInUseAssets = await assetModel.countDocuments({ status: "in use" });
-        const totalUnderRepairAssets = await assetModel.countDocuments({ status: "Under repair" });
+        // const totalAvailableAssets = await assetModel.countDocuments({ status: "available" });
+        // const totalInUseAssets = await assetModel.countDocuments({ status: "in use" });
+        // const totalUnderRepairAssets = await assetModel.countDocuments({ status: "Under repair" });
 
         return res.status(200).json({
             message: "Fetch all asset successfully",
             assets,
-            totalAssets,
-            totalAvailableAssets,
-            totalInUseAssets,
-            totalUnderRepairAssets,
-            currentPage: page,
-            totalPages: Math.ceil(totalAssets / limit)
+            // totalAssets,
+            // totalAvailableAssets,
+            // totalInUseAssets,
+            // totalUnderRepairAssets,
+            // currentPage: page,
+            // totalPages: Math.ceil(totalAssets / limit)
         });
 
     } catch (error) {
@@ -391,11 +441,12 @@ const deleteAsset = async (req, res) => {
 }
 
 const checkInAsset = async (req, res) => {
-    try {
+   
+   try {
 
         const { assetId } = req.params
 
-        const { userId,  } = req.body
+        const { userId, } = req.body
 
         if (!assetId || !userId) {
             return res.status(400).json({ message: "Asset ID and User ID are required" });
@@ -424,7 +475,7 @@ const checkInAsset = async (req, res) => {
 const checkOutAsset = async (req, res) => {
     try {
         const { assetId } = req.params;
-        
+
         const { userId } = req.body;
 
         if (!assetId || !userId) {
