@@ -5,6 +5,8 @@ import cookieParser from "cookie-parser";
 
 import connectDB from "./config/db.mjs";
 import redis from './config/redis.js';
+import dotenv from "dotenv";
+dotenv.config();
 
 
 const app = express();
