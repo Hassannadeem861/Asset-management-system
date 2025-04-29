@@ -395,7 +395,7 @@ const checkInAsset = async (req, res) => {
 
         const { assetId } = req.params
 
-        const { userId } = req.body
+        const { userId,  } = req.body
 
         if (!assetId || !userId) {
             return res.status(400).json({ message: "Asset ID and User ID are required" });
