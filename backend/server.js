@@ -1,3 +1,5 @@
+import dotenv from "dotenv";
+dotenv.config('./.env');
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
@@ -5,8 +7,6 @@ import cookieParser from "cookie-parser";
 
 import connectDB from "./config/db.mjs";
 import redis from './config/redis.js';
-import dotenv from "dotenv";
-dotenv.config('./.env');
 
 
 const app = express();
