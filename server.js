@@ -56,8 +56,6 @@ app.use("/api/v1", historyRoute);
 app.use("/api/v1", transferHistoryRoute);
 app.use("/api/v1", repairRoute);
 
-console.log(process.env.MONGODB_URI)
-
 // Simple route
 app.get("/", (req, res) => {
   try {
@@ -70,8 +68,8 @@ app.get("/", (req, res) => {
 
 // Set port and listen for requests
 const PORT = process.env.PORT || 8081;
-// app.listen(PORT, () => {
-//   console.log(`Server is running on port ${PORT}.`);
-// });
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}.`);
+});
 
 export default app;

@@ -5,7 +5,7 @@
   "type": "module",
  "scripts": {
     "dev": "nodemon -r dotenv/config --experimental-json-modules server.js",
-    "start": "node  server.js"
+    "start": "node server.js"
   },
   "author": "Hassan",
   "license": "ISC",
