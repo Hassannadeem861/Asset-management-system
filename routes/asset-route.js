@@ -4,16 +4,16 @@ import { authMiddleware, adminMiddleWare } from '../middleware/auth-middleware.j
 const router = express.Router();
 
 
-router.post('/create-asset', authMiddleware, adminMiddleWare, createAsset);
-router.post('/upload-bulk-asset', authMiddleware, adminMiddleWare, uploadBulkAssets);
-router.post('/checkin-asset/:assetId', authMiddleware, adminMiddleWare, checkInAsset);
-router.post('/checkout-asset/:assetId', authMiddleware, adminMiddleWare, checkOutAsset);
-router.get('/get-all-asset', authMiddleware, adminMiddleWare, getAllAsset);
-router.get('/get-single-asset/:id', authMiddleware, adminMiddleWare, getSingleAsset);
-router.get('/get-filter-data', authMiddleware, adminMiddleWare, getFilterData);
-router.get('/search-data', authMiddleware, adminMiddleWare, searchAssets);
-router.put('/update-asset/:id', authMiddleware, adminMiddleWare, updateAsset);
-router.delete('/delete-asset/:id', authMiddleware, adminMiddleWare, deleteAsset);
+router.post('/create-asset', authMiddleware, createAsset);
+router.post('/upload-bulk-asset', authMiddleware, uploadBulkAssets);
+router.post('/checkin-asset/:assetId', authMiddleware, checkInAsset);
+router.post('/checkout-asset/:assetId', authMiddleware, checkOutAsset);
+router.get('/get-all-asset', authMiddleware, getAllAsset);
+router.get('/get-single-asset/:id', authMiddleware, getSingleAsset);
+router.get('/get-filter-data', authMiddleware, getFilterData);
+router.get('/search-data', authMiddleware, searchAssets);
+router.put('/update-asset/:id', authMiddleware, updateAsset);
+router.delete('/delete-asset/:id', authMiddleware, deleteAsset);
 
 
 
