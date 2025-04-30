@@ -1,10 +1,11 @@
 import repairModel from "../models/repair-model.js";
 import assetModel from "../models/asset-model.js";
-
+import historyModel from "../models/history-model.js";
 
 const createRepair = async (req, res) => {
+   
     try {
-
+       
         const { asset, sendDate, repairPlace, cost } = req.body;
 
         if (!asset || !sendDate || !repairPlace || !cost) {
@@ -13,33 +14,41 @@ const createRepair = async (req, res) => {
             });
         }
 
-        const checkAssetId = await assetModel.findById(asset);
-
-        if (!checkAssetId) {
+        const assetDoc = await assetModel.findById(asset);
+        if (!assetDoc) {
             return res.status(404).json({ message: "Asset not found" });
         }
 
-        if (checkAssetId.status === "Under repair") {
+        if (assetDoc.status === "Under repair") {
             return res.status(400).json({ message: "This asset is already under repair." });
         }
 
-        if (checkAssetId.status === "available") {
-
-            const newRepair = await repairModel.create({
-                asset,
-                sendDate,
-                repairPlace,
-                cost,
-            });
-
-            checkAssetId.status = "Under repair";
-            await checkAssetId.save();
-
-            return res.status(201).json({ message: "Repair created successfully", data: newRepair });
-
-        } else {
+        if (!["available", "in use"].includes(assetDoc.status)) {
             return res.status(400).json({ message: "Asset is not available for repair" });
         }
+
+        const newRepair = await repairModel.create({
+            asset,
+            sendDate,
+            repairPlace,
+            cost,
+        });
+
+        assetDoc.status = "Under repair";
+        assetDoc.assignee = null; 
+        await assetDoc.save();
+
+        await historyModel.create({
+            asset,
+            actionType: "under_repair",
+            performedBy: req.admin,
+            date: new Date()
+        });
+
+        return res.status(201).json({
+            message: "Asset sent for repair successfully",
+            data: newRepair
+        });
 
     } catch (error) {
         return res.status(500).json({ message: "Error creating repair", error: error.message });
@@ -135,19 +144,13 @@ const getRepairById = async (req, res) => {
 };
 
 const updateRepair = async (req, res) => {
-
+   
     try {
-
         const { id } = req.params;
-
         const { returnDate } = req.body;
 
-        if (!id) {
-            return res.status(400).json({ message: "Repair ID is required" });
-        }
-
-        if (!returnDate) {
-            return res.status(400).json({ message: "Return date is required" });;
+        if (!id || !returnDate) {
+            return res.status(400).json({ message: "Repair ID and return date are required" });
         }
 
         const repair = await repairModel.findById(id);
@@ -159,16 +162,27 @@ const updateRepair = async (req, res) => {
         repair.status = "completed";
         await repair.save();
 
-        await assetModel.findByIdAndUpdate(repair.asset, {
+        const updatedAsset = await assetModel.findByIdAndUpdate(repair.asset, {
             status: "available"
+        }, { new: true });
+
+        await historyModel.create({
+            asset: repair.asset,
+            actionType: "repair_completed",
+            performedBy: req.admin,
+            date: new Date()
         });
 
-        return res.status(200).json({ message: "Repair updated successfully", repair });
+        return res.status(200).json({
+            message: "Repair completed and asset is now available",
+            repair,
+            updatedAsset
+        });
 
     } catch (error) {
         return res.status(500).json({ message: "Error updating repair", error: error.message });
     }
-};
+}
 
 const deleteRepair = async (req, res) => {
 

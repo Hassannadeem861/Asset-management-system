@@ -8,8 +8,7 @@ const historySchema = new mongoose.Schema({
         type: String,
         enum: [
             'created', 'updated', 'checked_out', 'checked_in',
-            'under_repair', 'repair_completed', 'depreciated', 'custodian_changed',
-            'retired', 'disposed'
+            'under_repair', 'repair_completed', 'custodian_changed'
         ],
 
         required: true
