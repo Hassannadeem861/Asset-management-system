@@ -331,13 +331,21 @@ const updateCustodian = async (req, res) => {
     try {
 
         const { assetId } = req.params
+        const { location, custodian } = req.body
 
-        if (!assetId) {
-            return res.status(400).json({ message: "ASSET ID is required" });
+        if (!assetId || !location || !custodian) {
+            return res.status(400).json({ message: "All fields is required" });
         }
 
-        
+        const asset = await assetModel.findById(assetId)
 
+        if (!asset) {
+            return res.status(400).json({ message: "Asset not found" });
+        }
+
+        const updateCustodian = await assetModel.findByIdAndUpdate(assetId, req.body, { new: true })
+
+        return res.status(200).json({ message: "Custodian updated succesfully", updateCustodian });
 
 
     } catch (error) {
@@ -453,4 +461,4 @@ const checkOutAsset = async (req, res) => {
 };
 
 
-export { createAsset, getAllAsset, getSingleAsset, updateAsset, deleteAsset, getFilterData, searchAssets, uploadBulkAssets, checkInAsset, checkOutAsset };
+export { createAsset, getAllAsset, getSingleAsset, updateAsset, updateCustodian, deleteAsset, getFilterData, searchAssets, uploadBulkAssets, checkInAsset, checkOutAsset };

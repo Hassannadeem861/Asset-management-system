@@ -1,5 +1,5 @@
 import express from 'express';
-import { createAsset, getAllAsset, getSingleAsset, updateAsset, deleteAsset, getFilterData, searchAssets, uploadBulkAssets, checkInAsset, checkOutAsset } from '../controllers/asset-controller.js';
+import { createAsset, getAllAsset, getSingleAsset, updateAsset, updateCustodian, deleteAsset, getFilterData, searchAssets, uploadBulkAssets, checkInAsset, checkOutAsset } from '../controllers/asset-controller.js';
 import { authMiddleware, adminMiddleWare } from '../middleware/auth-middleware.js'
 const router = express.Router();
 
@@ -13,6 +13,7 @@ router.get('/get-single-asset/:id', authMiddleware, getSingleAsset);
 router.get('/get-filter-data', authMiddleware, getFilterData);
 router.get('/search-data', authMiddleware, searchAssets);
 router.put('/update-asset/:id', authMiddleware, updateAsset);
+router.put('/update-custodian/:assetId', authMiddleware, updateCustodian);
 router.delete('/delete-asset/:id', authMiddleware, deleteAsset);
 
 

@@ -60,7 +60,7 @@ const getAllRepairs = async (req, res) => {
         const repairs = await repairModel.find().populate([
             {
                 path: "asset",
-                select: "name description assignee assignedBy purchaseDate purchasePrice status condition category location",
+                select: "name description assignee purchaseDate purchasePrice status condition category location",
                 populate: [
                     {
                         path: "category",
@@ -74,10 +74,7 @@ const getAllRepairs = async (req, res) => {
                         path: "assignee",
                         select: "_id username cnic phone"
                     },
-                    {
-                        path: "assignedBy",
-                        select: "_id name email role"
-                    }
+
                 ]
             }
         ]);
