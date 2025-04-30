@@ -1,10 +1,27 @@
 import mongoose from "mongoose";
 
 const historySchema = new mongoose.Schema({
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "Auth", required: true },
+    
     asset: { type: mongoose.Schema.Types.ObjectId, ref: "Asset", required: true },
-    checkin: { type: Date, default: null },
-    checkout: { type: Date, default: null },
+    
+    actionType: {
+        type: String,
+        enum: [
+            'created', 'updated', 'checked_out', 'checked_in',
+            'maintenance', 'depreciated', 'custodian_changed',
+            'retired', 'disposed'
+        ],
+        
+        required: true
+    },
+    
+    performedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'AdminAuth'},
+    assignee: { type: mongoose.Schema.Types.ObjectId, ref: 'Auth'},
+    
+    date: { type: Date, default: Date.now },
+    
+    details: { type: String },
+
 }, {
     timestamps: true
 });

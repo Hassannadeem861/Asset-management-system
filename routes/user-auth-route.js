@@ -12,7 +12,7 @@ import {
   forgetPassword,
   resetPassword
 } from "../controllers/user-auth-controller.js";
-import { authMiddleware } from "../middleware/auth-middleware.mjs";
+import { authMiddleware } from "../middleware/auth-middleware.js";
 const router = express.Router();
 
 

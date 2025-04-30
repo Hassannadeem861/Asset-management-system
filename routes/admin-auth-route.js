@@ -8,7 +8,7 @@ import {
   forgetPassword,
   resetPassword
 } from "../controllers/admin-auth-controller.js";
-import { authMiddleware, adminMiddleWare } from "../middleware/auth-middleware.mjs";
+import { authMiddleware, adminMiddleWare } from "../middleware/auth-middleware.js";
 const router = express.Router();
 
 

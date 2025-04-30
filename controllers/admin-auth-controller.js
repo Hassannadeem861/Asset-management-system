@@ -29,7 +29,6 @@ const register = async (req, res) => {
             name,
             email,
             password: hashedPassword,
-            role
         });
 
         return res.status(200).json({ message: "Registration successfully", adminCreated });

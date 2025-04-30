@@ -23,6 +23,7 @@ const authMiddleware = async (req, res, next) => {
     }
 
     req.admin = admin;
+    
     next();
   } catch (error) {
     return res.status(200).json({ message: "Invalid token", error: error.message });
@@ -32,12 +33,12 @@ const authMiddleware = async (req, res, next) => {
 
 const adminMiddleWare = async (req, res, next) => {
   try {
+   
     const admin = await adminModel.findById(req?.admin?._id);
    
     if (!admin) {
       return res.status(401).json({ message: "Admin not found" });
     }
-    console.log("adminMiddleWare :", admin);
 
     if (admin?.role !== "admin") {
       return res.status(401).json({ message: "This user is not admin" });

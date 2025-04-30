@@ -14,7 +14,7 @@ const getAllHistory = async (req, res) => {
         const total = await HistoryModel.countDocuments();
 
         const history = await HistoryModel.find()
-            .populate("user")
+            .populate("performedBy")
             .populate("asset")
             .sort({ createdAt: -1 })
             .skip(skip)
@@ -36,7 +36,7 @@ const getSingleHistory = async (req, res) => {
     try {
 
         const history = await HistoryModel.findById(req.params.id)
-            .populate("user")
+            .populate("performedBy")
             .populate("asset");
 
         if (!history) {
@@ -61,8 +61,8 @@ const getSingleAssetHistory = async (req, res) => {
 
         const historyRecords = await historyModel.find({ asset: assetId })
             .populate({
-                path: "user",
-                select: "username email cnic phone address role status"
+                path: "performedBy",
+                select: "name email role"
             })
             .populate({
                 path: "asset",

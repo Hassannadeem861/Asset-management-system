@@ -3,7 +3,7 @@ import userModel from "../models/user-auth-modle.js";
 import adminModel from "../models/admin-auth-model.js";
 import historyModel from "../models/history-model.js";
 import mongoose from "mongoose";
-
+import moment from 'moment';
 
 
 
@@ -29,7 +29,6 @@ const createAsset = async (req, res) => {
             if (!user) return res.status(404).json({ message: "Assignee user not found" });
 
             const alreadyAssigned = await assetModel.findOne({ assignee })
-            console.log();
 
             if (alreadyAssigned) return res.status(400).json({ message: "Asset already assigned to this user" });
         }
@@ -37,47 +36,48 @@ const createAsset = async (req, res) => {
         const assetsToInsert = [];
 
         for (let i = 0; i < qua; i++) {
-            const isFirstAsset = i === 0 && assignee;
+            const assigned = i === 0 && assignee;
 
             assetsToInsert.push({
                 name,
                 description,
                 category,
                 location,
-                assignee: isFirstAsset ? assignee : null,
+                assignee: assigned ? assignee : null,
                 purchaseDate,
                 purchasePrice,
-                status: isFirstAsset ? "in use" : "available",
-                condition
+                status: assigned ? "in use" : "available",
+                condition,
             });
         }
 
-        const insertedAssets = await assetModel.insertMany(assetsToInsert)
+        const createdAssets = await assetModel.insertMany(assetsToInsert)
 
-        if (assignee) {
-            const today = new Date();
-            const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+        const performedBy = req.admin;
+        console.log("performedBy: ", performedBy);
 
-            const existingCheckin = await historyModel.findOne({
-                user: assignee,
-                asset: insertedAssets[0]._id,
-                checkin: { $gte: startOfDay }
+
+        for (let asset of createdAssets) {
+            await historyModel.create({
+                asset: asset._id,
+                actionType: 'created',
+                performedBy,
+                assignee,
+                details: `Asset created${asset.assignee ? ' and assigned to user' : ''}.`
             });
 
-            if (!existingCheckin) {
+            if (asset.assignee) {
                 await historyModel.create({
-                    user: assignee,
-                    asset: insertedAssets[0]._id,
-                    checkin: new Date()
+                    asset: asset._id,
+                    actionType: 'checked_in',
+                    performedBy,
+                    assignee,
+                    details: `Asset assigned to user.`,
                 });
             }
         }
 
-        return res.status(201).json({
-            message: "Asset created successfully",
-            asset: insertedAssets
-        });
-
+        return res.status(201).json({ message: "Assets created", assets: createdAssets });
     } catch (error) {
         return res.status(500).json({
             message: "Asset creation failed",
@@ -304,69 +304,25 @@ const updateAsset = async (req, res) => {
             purchaseDate, assignee, purchasePrice, condition
         } = req.body;
 
-        if (!name || !description || !category || !location || !purchaseDate || !purchasePrice) {
-            return res.status(400).json({ message: "All fields are required" });
+        if (!name && !description && !category && !location && !purchaseDate && !purchasePrice) {
+            return res.status(400).json({ message: "Atleast one field is required" });
         }
 
         const oldAsset = await assetModel.findById(id);
         if (!oldAsset) return res.status(404).json({ message: "Asset not found" });
 
-        if (oldAsset.assignee && (!assignee || oldAsset.assignee.toString() !== assignee)) {
-            await historyModel.findOneAndUpdate(
-                {
-                    user: oldAsset.assignee,
-                    asset: id,
-                    checkout: null
-                },
-                { checkout: new Date() }
-            );
-        }
+        const updated = await assetModel.findByIdAndUpdate(id, {
+            name, description, category, location, purchaseDate, purchasePrice, condition
+        }, { new: true });
 
-        if (assignee) {
-            const user = await userModel.findById(assignee);
-            if (!user) return res.status(404).json({ message: "Assignee user not found" });
+        await historyModel.create({
+            asset: updated._id,
+            actionType: 'updated',
+            performedBy: req.userId,
+            details: 'Asset updated.'
+        });
 
-            const alreadyAssigned = await assetModel.findOne({ assignee });
-            if (alreadyAssigned && alreadyAssigned._id.toString() !== id) {
-                return res.status(400).json({ message: "Asset already assigned to this user" });
-            }
-
-            const today = new Date();
-            const startOfDay = new Date(today.setHours(0, 0, 0, 0));
-            const existingCheckin = await historyModel.findOne({
-                user: assignee,
-                asset: id,
-                checkin: { $gte: startOfDay }
-            });
-
-            if (!existingCheckin) {
-                await historyModel.create({
-                    user: assignee,
-                    asset: id,
-                    checkin: new Date()
-                });
-            }
-
-            // await userModel.findByIdAndUpdate(assignee, { status: "checkin" });
-        }
-
-        const updatedAsset = await assetModel.findByIdAndUpdate(
-            id,
-            {
-                name,
-                description,
-                category,
-                location,
-                purchaseDate,
-                purchasePrice,
-                condition,
-                assignee: assignee || null,
-                status: assignee ? "in use" : "available",
-            },
-            { new: true }
-        );
-
-        return res.status(200).json({ message: "Asset updated successfully", asset: updatedAsset });
+        return res.status(200).json({ message: "Asset updated", asset: updated });
 
     } catch (error) {
         return res.status(500).json({ message: "Asset update failed", error: error.message });
@@ -392,71 +348,92 @@ const deleteAsset = async (req, res) => {
 
 const checkInAsset = async (req, res) => {
     try {
+        const { assetId } = req.params;
+        const { userId } = req.body;
 
-        const { assetId } = req.params
+        const today = moment().startOf('day');
 
-        const { userId,  } = req.body
+        const alreadyCheckedIn = await historyModel.findOne({
+            actionType: 'checked_in',
+            performedBy: req.admin,
+            date: { $gte: today.toDate() }
+        });
 
-        if (!assetId || !userId) {
-            return res.status(400).json({ message: "Asset ID and User ID are required" });
+        if (alreadyCheckedIn) {
+            return res.status(400).json({ message: "You have already checked in once today." });
         }
+
+        const asset = await assetModel.findById(assetId);
+        console.log(asset)
+        if (!asset) return res.status(404).json({ message: "Asset not found" });
+
+        if (asset.status === 'in_use') {
+            return res.status(400).json({ message: "Asset already in use." });
+        }
+
+        await assetModel.findByIdAndUpdate(assetId, {
+            status: 'in_use',
+            assignee: userId
+        });
 
         await historyModel.create({
             asset: assetId,
-            user: userId,
-            checkin: new Date()
-        })
-
-        await assetModel.findByIdAndUpdate(assetId, {
+            actionType: 'checked_in',
+            performedBy: req.admin,
             assignee: userId,
-            status: "in use"
-        })
+            details: `Checked in by admin. Assigned to user ${userId}.`
+        });
 
+        return res.status(200).json({ message: "Asset checked in successfully." });
 
-        return res.status(200).json({ message: "Asset checked in successfully" });
-
-    } catch (error) {
-
-        return res.status(500).json({ message: "Server error", error: error.message });
+    } catch (err) {
+        return res.status(500).json({ message: "Check-in failed", error: err.message });
     }
-}
+};
 
 const checkOutAsset = async (req, res) => {
     try {
         const { assetId } = req.params;
-        
         const { userId } = req.body;
 
-        if (!assetId || !userId) {
-            return res.status(400).json({ message: "Asset ID and User ID are required" });
+
+        const today = moment().startOf('day');
+
+        const alreadyCheckedOut = await historyModel.findOne({
+            actionType: 'checked_out',
+            performedBy: req.admin,
+            date: { $gte: today.toDate() }
+        });
+
+        if (alreadyCheckedOut) {
+            return res.status(400).json({ message: "You have already checked out once today." });
         }
 
-        const history = await historyModel.findOneAndUpdate(
-            {
-                asset: assetId,
-                user: userId,
-                checkout: null
-            },
-            {
-                checkout: new Date()
-            }
-        );
+        const asset = await assetModel.findById(assetId);
 
-        if (!history) {
-            return res.status(404).json({ message: "No active check-in found for this asset and user" });
+        if (!asset || asset.status === 'available') {
+            return res.status(404).json({ message: "Asset not found or already available" });
         }
 
         await assetModel.findByIdAndUpdate(assetId, {
-            assignee: null,
-            status: "available"
+            status: 'available',
+            assignee: null
         });
 
-        return res.status(200).json({ message: "Asset checked out successfully" });
+        await historyModel.create({
+            asset: assetId,
+            actionType: 'checked_out',
+            performedBy: req.admin,
+            assignee: userId,
+            details: "Asset checked out (unassigned)."
+        });
 
-    } catch (error) {
-        console.error("Check-out error:", error);
-        return res.status(500).json({ message: "Server error", error: error.message });
+        return res.status(200).json({ message: "Asset checked out successfully." });
+
+    } catch (err) {
+        return res.status(500).json({ message: "Check-out failed", error: err.message });
     }
 };
+
 
 export { createAsset, getAllAsset, getSingleAsset, updateAsset, deleteAsset, getFilterData, searchAssets, uploadBulkAssets, checkInAsset, checkOutAsset };
