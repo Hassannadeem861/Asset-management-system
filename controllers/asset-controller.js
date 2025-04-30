@@ -54,9 +54,6 @@ const createAsset = async (req, res) => {
         const createdAssets = await assetModel.insertMany(assetsToInsert)
 
         const performedBy = req.admin;
-        console.log("performedBy: ", performedBy);
-
-
         for (let asset of createdAssets) {
             await historyModel.create({
                 asset: asset._id,
@@ -328,6 +325,26 @@ const updateAsset = async (req, res) => {
         return res.status(500).json({ message: "Asset update failed", error: error.message });
     }
 };
+
+const updateCustodian = async (req, res) => {
+
+    try {
+
+        const { assetId } = req.params
+
+        if (!assetId) {
+            return res.status(400).json({ message: "ASSET ID is required" });
+        }
+
+        
+
+
+
+    } catch (error) {
+        return res.status(500).json({ message: "Error in update custodian", error: error.message });
+    }
+
+}
 
 const deleteAsset = async (req, res) => {
     try {

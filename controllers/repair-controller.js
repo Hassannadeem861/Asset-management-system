@@ -109,7 +109,7 @@ const getRepairById = async (req, res) => {
         const repair = await repairModel.findById(id).populate([
             {
                 path: "asset",
-                select: "name description assignee assignedBy purchaseDate purchasePrice status condition category location",
+                select: "name description assignee purchaseDate purchasePrice status condition category location",
                 populate: [
                     {
                         path: "category",
@@ -122,11 +122,6 @@ const getRepairById = async (req, res) => {
                     },
 
                     {
-                        path: "assignedBy",
-                        select: "_id name email role"
-                    },
-
-                    {
                         path: "assignee",
                         select: "_id username cnic phone"
                     }
@@ -136,7 +131,7 @@ const getRepairById = async (req, res) => {
         ]);
 
 
-        return res.status(200).json({ message: "Repair record found", count: repair.length, repair });
+        return res.status(200).json({ message: "Repair record found", repair });
 
     } catch (error) {
         return res.status(500).json({ message: "Error getting repair record", error: error.message });
@@ -146,6 +141,7 @@ const getRepairById = async (req, res) => {
 const updateRepair = async (req, res) => {
    
     try {
+
         const { id } = req.params;
         const { returnDate } = req.body;
 

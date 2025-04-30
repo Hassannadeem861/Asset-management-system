@@ -69,7 +69,7 @@ const login = async (req, res) => {
                 httpOnly: true,
                 secure: true,
             })
-            .json({ status: 201, message: `Successfully Logged In`, admin, token, success: true });
+            .json({ status: 201, message: `Successfully Logged In`, admin, token:token, success: true });
     } catch (error) {
         return res.status(500).json({ message: "Login failed", error: error.message });
     }

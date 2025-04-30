@@ -11,11 +11,13 @@ const assetSchema = new mongoose.Schema({
     purchasePrice: { type: Number, required: true },
     status: {
         type: String,
-        enum: ['available', 'in use', 'Under repair', 'retired', 'disposed'],
+        enum: ['available', 'in use', 'Under repair'],
         default: 'available',
         index: true
     },
-    condition: { type: String, enum: ['new', 'used', 'damaged'], default: 'new' }
+    condition: { type: String, enum: ['new', 'used', 'damaged'], default: 'new' },
+    custodian: { type: mongoose.Schema.Types.ObjectId, ref: 'AdminAuth', required: false, index: true },
+
 }, { timestamps: true });
 
 export default mongoose.model('Asset', assetSchema);
