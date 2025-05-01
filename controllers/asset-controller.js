@@ -219,7 +219,6 @@ const getAllAsset = async (req, res) => {
     }
 };
 
-
 const getSingleAsset = async (req, res) => {
 
     try {
@@ -431,12 +430,12 @@ const checkInAsset = async (req, res) => {
         console.log(asset)
         if (!asset) return res.status(404).json({ message: "Asset not found" });
 
-        if (asset.status === 'in_use') {
+        if (asset.status === 'in use') {
             return res.status(400).json({ message: "Asset already in use." });
         }
 
         await assetModel.findByIdAndUpdate(assetId, {
-            status: 'in_use',
+            status: 'in use',
             assignee: userId
         });
 

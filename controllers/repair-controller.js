@@ -3,9 +3,9 @@ import assetModel from "../models/asset-model.js";
 import historyModel from "../models/history-model.js";
 
 const createRepair = async (req, res) => {
-   
+
     try {
-       
+
         const { asset, sendDate, repairPlace, cost } = req.body;
 
         if (!asset || !sendDate || !repairPlace || !cost) {
@@ -35,7 +35,7 @@ const createRepair = async (req, res) => {
         });
 
         assetDoc.status = "Under repair";
-        assetDoc.assignee = null; 
+        assetDoc.assignee = null;
         await assetDoc.save();
 
         await historyModel.create({
@@ -136,20 +136,25 @@ const getRepairById = async (req, res) => {
 };
 
 const updateRepair = async (req, res) => {
-   
+
     try {
 
-        const { id } = req.params;
+        const { assetId } = req.params;
+
         const { returnDate } = req.body;
 
-        if (!id || !returnDate) {
+        if (!assetId || !returnDate) {
             return res.status(400).json({ message: "Repair ID and return date are required" });
         }
 
-        const repair = await repairModel.findById(id);
-        if (!repair) {
-            return res.status(404).json({ message: "Repair not found" });
+        const asset = await assetModel.findById(assetId);
+
+        if (!asset) {
+            return res.status(404).json({ message: "Asset not found" });
         }
+
+        const repair = await repairModel.findById(id);
+      
 
         repair.returnDate = returnDate;
         repair.status = "completed";
