@@ -6,7 +6,7 @@ import { authMiddleware } from "../middleware/auth-middleware.js"
 router.post("/create-repair", authMiddleware, createRepair);
 router.get("/get-all-repair-records", authMiddleware, getAllRepairs);
 router.get("/get-single-repair-record/:id", authMiddleware, getRepairById);
-router.put("/update-repair-record/:id", authMiddleware, updateRepair);
+router.put("/update-repair-record/:assetId", authMiddleware, updateRepair);
 router.delete("/delete-repair-record/:id", authMiddleware, deleteRepair);
 
 

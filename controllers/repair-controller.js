@@ -15,17 +15,19 @@ const createRepair = async (req, res) => {
         }
 
         const assetDoc = await assetModel.findById(asset);
+
         if (!assetDoc) {
             return res.status(404).json({ message: "Asset not found" });
+        }
+
+        if (assetDoc.status === "in use") {
+            return res.status(400).json({ message: "Asset is not available for repair" });
         }
 
         if (assetDoc.status === "Under repair") {
             return res.status(400).json({ message: "This asset is already under repair." });
         }
 
-        if (!["available", "in use"].includes(assetDoc.status)) {
-            return res.status(400).json({ message: "Asset is not available for repair" });
-        }
 
         const newRepair = await repairModel.create({
             asset,
@@ -136,36 +138,34 @@ const getRepairById = async (req, res) => {
 };
 
 const updateRepair = async (req, res) => {
-
     try {
-
         const { assetId } = req.params;
-
         const { returnDate } = req.body;
 
         if (!assetId || !returnDate) {
-            return res.status(400).json({ message: "Repair ID and return date are required" });
+            return res.status(400).json({ message: "Asset ID and return date are required" });
         }
 
         const asset = await assetModel.findById(assetId);
-
         if (!asset) {
             return res.status(404).json({ message: "Asset not found" });
         }
 
-        const repair = await repairModel.findById(id);
-      
+        const repair = await repairModel.findOne({ asset: assetId });
+        if (!repair) {
+            return res.status(404).json({ message: "Repair record not found for this asset" });
+        }
 
         repair.returnDate = returnDate;
         repair.status = "completed";
         await repair.save();
 
-        const updatedAsset = await assetModel.findByIdAndUpdate(repair.asset, {
+        const updatedAsset = await assetModel.findByIdAndUpdate(assetId, {
             status: "available"
         }, { new: true });
 
         await historyModel.create({
-            asset: repair.asset,
+            asset: assetId,
             actionType: "repair_completed",
             performedBy: req.admin,
             date: new Date()
@@ -180,7 +180,7 @@ const updateRepair = async (req, res) => {
     } catch (error) {
         return res.status(500).json({ message: "Error updating repair", error: error.message });
     }
-}
+};
 
 const deleteRepair = async (req, res) => {
 
