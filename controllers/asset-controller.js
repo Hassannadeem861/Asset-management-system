@@ -373,19 +373,21 @@ const deleteAsset = async (req, res) => {
 
 const checkInAsset = async (req, res) => {
     try {
+
         const { assetId } = req.params;
         const { userId } = req.body;
 
         const today = moment().startOf('day');
 
         const alreadyCheckedIn = await historyModel.findOne({
+            asset: assetId,
             actionType: 'checked_in',
             performedBy: req.admin,
             date: { $gte: today.toDate() }
         });
 
         if (alreadyCheckedIn) {
-            return res.status(400).json({ message: "You have already checked in once today." });
+            return res.status(400).json({ message: "This asset has already been checked in by you today." });
         }
 
         const asset = await assetModel.findById(assetId);
@@ -425,13 +427,14 @@ const checkOutAsset = async (req, res) => {
         const today = moment().startOf('day');
 
         const alreadyCheckedOut = await historyModel.findOne({
+            asset: assetId,
             actionType: 'checked_out',
             performedBy: req.admin,
             date: { $gte: today.toDate() }
         });
 
         if (alreadyCheckedOut) {
-            return res.status(400).json({ message: "You have already checked out once today." });
+            return res.status(400).json({ message: "This asset has already been checked out by you today." });
         }
 
         const asset = await assetModel.findById(assetId);
