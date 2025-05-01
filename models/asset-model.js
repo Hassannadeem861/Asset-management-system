@@ -16,7 +16,7 @@ const assetSchema = new mongoose.Schema({
         index: true
     },
     condition: { type: String, enum: ['new', 'used', 'damaged'], default: 'new' },
-    custodian: { type: mongoose.Schema.Types.ObjectId, ref: 'AdminAuth', required: false, index: true },
+    custodianName: { type: String },
 
 }, { timestamps: true });
 

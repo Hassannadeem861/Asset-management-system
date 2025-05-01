@@ -367,10 +367,14 @@ const updateCustodian = async (req, res) => {
     try {
 
         const { assetId } = req.params
-        const { location, custodian } = req.body
+        const { location, custodianName } = req.body
 
-        if (!assetId || !location || !custodian) {
-            return res.status(400).json({ message: "All fields is required" });
+        if (!assetId) {
+            return res.status(400).json({ message: "ASSET ID is required" });
+        }
+
+        if (!location && !custodianName) {
+            return res.status(400).json({ message: "At least one field (location or custodianName) must be provided" });
         }
 
         const asset = await assetModel.findById(assetId)
@@ -379,8 +383,15 @@ const updateCustodian = async (req, res) => {
             return res.status(400).json({ message: "Asset not found" });
         }
 
-        const updateCustodian = await assetModel.findByIdAndUpdate(assetId, req.body, { new: true })
-
+        const updatedFields = {};
+        if (location) updatedFields.location = location;
+        if (custodianName) updatedFields.custodianName = custodianName;
+        
+        const updateCustodian = await assetModel.findByIdAndUpdate(
+            assetId,
+            updatedFields,
+            { new: true }
+        );
         return res.status(200).json({ message: "Custodian updated succesfully", updateCustodian });
 
 
