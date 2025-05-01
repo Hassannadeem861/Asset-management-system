@@ -141,47 +141,84 @@ const uploadBulkAssets = async (req, res) => {
 }
 
 const getAllAsset = async (req, res) => {
-
     try {
-
-        const page = req.query.page || 1;
-
-        const limit = req.query.limit || 10;
-
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
 
-        const assets = await assetModel.find()
-            .populate("location")
-            .populate("category")
-            .populate("assignee")
-            .skip(skip)
-            .limit(limit)
+        const [assets, stats] = await Promise.all([
+            assetModel.find()
+                .populate("location")
+                .populate("category")
+                .populate("assignee")
+                .populate("custodian")
+                .skip(skip)
+                .limit(limit)
+                .lean(),
+
+            assetModel.aggregate([
+                {
+                    $group: {
+                        _id: "$status",
+                        count: { $sum: 1 }
+                    }
+                },
+                {
+                    $group: {
+                        _id: null,
+                        totalAssets: { $sum: "$count" },
+                        stats: {
+                            $push: {
+                                k: "$_id",
+                                v: "$count"
+                            }
+                        }
+                    }
+                },
+                {
+                    $addFields: {
+                        stats: { $arrayToObject: "$stats" }
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        totalAssets: 1,
+                        stats: 1
+                    }
+                }
+            ])
+        ]);
 
         if (!assets || assets.length === 0) {
-            return res.status(404).json({ message: "No asset found" })
+            return res.status(404).json({ message: "No assets found" });
         }
 
-        const totalAssets = await assetModel.countDocuments();
-
-        const totalAvailableAssets = await assetModel.countDocuments({ status: "available" });
-        const totalInUseAssets = await assetModel.countDocuments({ status: "in use" });
-        const totalUnderRepairAssets = await assetModel.countDocuments({ status: "Under repair" });
+        const summary = stats[0] || {
+            totalAssets: 0,
+            stats: {
+                available: 0,
+                'in use': 0,
+                'Under repair': 0
+            }
+        };
 
         return res.status(200).json({
-            message: "Fetch all asset successfully",
+            message: "Assets fetched successfully",
             assets,
-            totalAssets,
-            totalAvailableAssets,
-            totalInUseAssets,
-            totalUnderRepairAssets,
+            totalAssets: summary.totalAssets,
+            totalAvailableAssets: summary.stats.available || 0,
+            totalInUseAssets: summary.stats['in use'] || 0,
+            totalUnderRepairAssets: summary.stats['Under repair'] || 0,
             currentPage: page,
-            totalPages: Math.ceil(totalAssets / limit)
+            totalPages: Math.ceil(summary.totalAssets / limit)
         });
 
     } catch (error) {
-        return res.status(500).json({ message: "Error creating asset", error: error.message });
+        return res.status(500).json({ message: "Error fetching assets", error: error.message });
     }
-}
+};
+
 
 const getSingleAsset = async (req, res) => {
 
