@@ -386,7 +386,7 @@ const updateCustodian = async (req, res) => {
         const updatedFields = {};
         if (location) updatedFields.location = location;
         if (custodianName) updatedFields.custodianName = custodianName;
-        
+
         const updateCustodian = await assetModel.findByIdAndUpdate(
             assetId,
             updatedFields,
@@ -424,6 +424,11 @@ const checkInAsset = async (req, res) => {
         const { assetId } = req.params;
         const { userId } = req.body;
 
+        // if (!assetId || userId) {
+        //     return res.status(400).json({ message: "Asset id and user id is required" });
+        // }
+
+
         const today = moment().startOf('day');
 
         const alreadyCheckedIn = await historyModel.findOne({
@@ -438,8 +443,12 @@ const checkInAsset = async (req, res) => {
         }
 
         const asset = await assetModel.findById(assetId);
-        console.log(asset)
+        const user = await userModel.findById(userId);
+
         if (!asset) return res.status(404).json({ message: "Asset not found" });
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+
 
         if (asset.status === 'in use') {
             return res.status(400).json({ message: "Asset already in use." });
@@ -485,6 +494,14 @@ const checkOutAsset = async (req, res) => {
         }
 
         const asset = await assetModel.findById(assetId);
+        const user = await userModel.findById(assetId);
+
+        if (!asset) return res.status(404).json({ message: "Asset not found" });
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+
+
+      
 
         if (!asset || asset.status === 'available') {
             return res.status(404).json({ message: "Asset not found or already available" });

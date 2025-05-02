@@ -69,7 +69,7 @@ const login = async (req, res) => {
                 httpOnly: true,
                 secure: true,
             })
-            .json({ status: 201, message: `Successfully Logged In`, admin, token:token, success: true });
+            .json({ status: 201, message: `Successfully Logged In`, admin, token: token, success: true });
     } catch (error) {
         return res.status(500).json({ message: "Login failed", error: error.message });
     }
@@ -106,6 +106,31 @@ const getAllAdmins = async (req, res) => {
         return res.status(500).json({ message: "Failed to get all admins", error: error.message });
     }
 };
+
+const geSingleAdmin = async (req, res) => {
+
+    try {
+
+        const { id } = req.params
+
+        if (!id) {
+            return res.status(500).json({ message: "Id is required" });
+        }
+
+        const admin = await adminModel.findById(id);
+
+        if (!admin) {
+            return res.status(500).json({ message: "Admin not found" });
+        }
+
+
+        return res.status(200).json({ message: "Fetched single admin successfully", admin });
+
+
+    } catch (error) {
+        return res.status(500).json({ message: "Failed to get single admin", error: error.message });
+    }
+}
 
 const logout = async (req, res) => {
     try {
@@ -172,7 +197,7 @@ const resetPassword = async (req, res) => {
 
     try {
 
-        const  token  = req.params.token.trim();
+        const token = req.params.token.trim();
         console.log("token: ", token);
         // console.log("req.params: ", req.params);
 
@@ -281,6 +306,7 @@ export {
     register,
     login,
     getAllAdmins,
+    geSingleAdmin,
     logout,
     forgetPassword,
     resetPassword,
