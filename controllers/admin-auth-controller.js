@@ -107,7 +107,7 @@ const getAllAdmins = async (req, res) => {
     }
 };
 
-const geSingleAdmin = async (req, res) => {
+const getSingleAdmin = async (req, res) => {
 
     try {
 
@@ -306,7 +306,7 @@ export {
     register,
     login,
     getAllAdmins,
-    geSingleAdmin,
+    getSingleAdmin,
     logout,
     forgetPassword,
     resetPassword,

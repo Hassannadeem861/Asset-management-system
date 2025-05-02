@@ -3,7 +3,7 @@ import {
   register,
   login,
   getAllAdmins,
-  geSingleAdmin,
+  getSingleAdmin,
   logout,
   updatePassword,
   forgetPassword,
@@ -16,7 +16,7 @@ const router = express.Router();
 router.post("/register", register);
 router.post("/login", login);
 router.get("/get-all-admins", authMiddleware, getAllAdmins);
-router.get("/get-single-admin", authMiddleware, geSingleAdmin);
+router.get("/get-single-admin/:id", authMiddleware, getSingleAdmin);
 router.get("/logout", logout);
 router.post("/forget-password", forgetPassword);
 router.post("/reset-password/:token", resetPassword);
