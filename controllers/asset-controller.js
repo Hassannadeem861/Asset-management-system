@@ -151,7 +151,6 @@ const getAllAsset = async (req, res) => {
                 .populate("location")
                 .populate("category")
                 .populate("assignee")
-                .populate("custodian")
                 .skip(skip)
                 .limit(limit)
                 .lean(),
